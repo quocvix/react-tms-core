@@ -40,7 +40,7 @@ export const NavUser = ({ user }: { user: NavUserProps }) => {
                 >
                     <Avatar className="h-8 w-8 rounded-lg">
                         <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback className="rounded-lg text-xs font-semibold">
+                        <AvatarFallback className="text-xs font-semibold">
                             {initials}
                         </AvatarFallback>
                     </Avatar>

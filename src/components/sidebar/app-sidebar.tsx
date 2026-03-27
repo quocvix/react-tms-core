@@ -1,92 +1,25 @@
 "use client";
 
 import * as React from "react";
-import {
-    BookOpen,
-    Bot,
-    Command,
-    Folder,
-    Frame,
-    Home,
-    LifeBuoy,
-    Map,
-    PieChart,
-    Send,
-    Settings,
-    Settings2,
-    SquareTerminal,
-    Users,
-} from "lucide-react";
+import { Command } from "lucide-react";
 
-import {
-    SidebarNavItem,
-    type SidebarNavItem as SidebarNavItemType,
-    type SidebarNavNode,
-} from "@/components/sidebar/sidebar-nav-item";
-// import { NavProjects } from "@/components/sidebar/nav-projects"
-// import { NavSecondary } from "@/components/sidebar/nav-secondary"
-import { NavUser } from "@/components/header/nav-user";
+import { SidebarNavItem } from "@/components/sidebar/sidebar-nav-item";
+import { sidebarMenu } from "@/lib/sidebar-data";
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-
-export const navMain: SidebarNavNode[] = [
-    {
-        title: "Dashboard",
-        url: "/dashboard",
-        icon: Home,
-        isActive: false,
-    },
-    {
-        title: "Projects",
-        icon: Folder,
-        isActive: true,
-        items: [
-            {
-                title: "Frontend",
-                items: [
-                    { title: "Web App", url: "/projects/frontend/web-app" },
-                    {
-                        title: "Landing Page",
-                        url: "/projects/frontend/landing-page",
-                    },
-                ],
-            },
-            {
-                title: "Backend",
-                items: [
-                    {
-                        title: "API",
-                        url: "/projects/backend/api",
-                        isActive: true,
-                    },
-                    { title: "Workers", url: "/projects/backend/workers" },
-                ],
-            },
-            {
-                title: "All Projects",
-                url: "/projects",
-            },
-        ],
-    },
-    {
-        title: "Settings",
-        url: "/settings",
-        icon: Settings,
-    },
-];
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export const AppSidebar = ({
+    ...props
+}: React.ComponentProps<typeof Sidebar>) => {
     return (
         <Sidebar collapsible="icon" variant="inset" {...props}>
             <SidebarHeader>
@@ -112,11 +45,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarHeader>
 
             <SidebarContent>
-                {/* <NavMain items={data.navMain} /> */}
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {navMain.map((item) => (
+                            {sidebarMenu.map((item) => (
                                 <SidebarNavItem key={item.title} item={item} />
                             ))}
                         </SidebarMenu>
@@ -130,4 +62,4 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarFooter>
         </Sidebar>
     );
-}
+};
