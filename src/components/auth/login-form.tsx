@@ -14,6 +14,7 @@ export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+
     return (
         <div className={cn("flex flex-col gap-6", className)} {...props}>
             <Card className="overflow-hidden p-0">
@@ -31,11 +32,11 @@ export function LoginForm({
 
                             {/* email */}
                             <Field>
-                                <FieldLabel htmlFor="email">Email</FieldLabel>
+                                <FieldLabel htmlFor="username">Username</FieldLabel>
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="m@example.com"
+                                    id="username"
+                                    type="text"
+                                    placeholder="username"
                                     required
                                 />
                             </Field>
@@ -66,7 +67,7 @@ export function LoginForm({
                     {/* right side image */}
                     <div className="relative hidden bg-muted md:block">
                         <img
-                            src="/placeholder.svg"
+                            src="src/assets/images/public/404_NotFound.png"
                             alt="Image"
                             className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                         />
