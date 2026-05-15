@@ -48,9 +48,9 @@ export const NavUser = ({ user }: { user: NavUserProps }) => {
                         <span className="truncate font-medium">
                             {user.name}
                         </span>
-                        <span className="truncate text-xs text-muted-foreground">
+                        {/* <span className="truncate text-xs text-muted-foreground">
                             {user.email}
-                        </span>
+                        </span> */}
                     </div>
                 </button>
             </DropdownMenuTrigger>
