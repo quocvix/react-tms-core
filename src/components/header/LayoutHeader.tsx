@@ -1,8 +1,9 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NavUser, type NavUserProps } from "./nav-user";
-import { Bell, Moon, Sun, Warehouse, Languages, Check } from "lucide-react";
+import { Moon, Sun, Warehouse, Languages, Check } from "lucide-react";
 import { Button } from "../ui/button";
+import { Notification } from "./notification";
 import { useThemeStore } from "@/stores/useThemeStore";
 import {
     DropdownMenu,
@@ -55,9 +56,7 @@ export const LayoutHeader = () => {
 
                 {/* Right-side actions */}
                 <div className="ml-auto -mr-3 flex items-center gap-2">
-                    <Button variant="ghost" size="icon-lg" className="cursor-pointer ">
-                        <Bell className="h-5 w-5" />
-                    </Button>
+                    <Notification />
 
                     {/* Hub dropdown */}
                     <DropdownMenu>
