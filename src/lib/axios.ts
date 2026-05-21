@@ -3,7 +3,7 @@ import { useAuthStore } from "@/stores/useAuthStore";
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
-    withCredentials: true,
+    withCredentials: false,
     timeout: 10_000,
     headers: {
         "Content-Type": "application/json",
@@ -14,9 +14,9 @@ const api = axios.create({
 // Gắn access token vào header Authorization trước mỗi request
 api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        const { accessToken } = useAuthStore.getState();
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
+        const token = localStorage.getItem("access-token");
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },

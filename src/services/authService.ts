@@ -6,6 +6,8 @@ import type { User } from "@/types/user";
 export interface SignInRequest {
     email: string;
     password: string;
+    platform: string;
+    device_id: string;
 }
 
 
@@ -18,18 +20,20 @@ export interface AuthResponse {
 
 const authService = {
     /**
-     * Đăng nhập — trả về accessToken + user profile
+     * Đăng nhập — trả về accessToken
      */
-    signIn: async (username: string, password: string) => {
+    signIn: async (request: SignInRequest) => {
         const res = await api.post(
-            "/auth/signin",
+            "/auth/api/login",
             {
-                username,
-                password,
+                email: request.email,
+                password: request.password,
+                platform: request.platform,
+                device_id: request.device_id,
             },
-            { withCredentials: true },
+            { withCredentials: false },
         );
-        return res.data; // accessToken, user
+        return res.data.data.token; // accessToken
     },
 
 
@@ -44,7 +48,7 @@ const authService = {
      * Lấy thông tin user hiện tại (dùng khi reload trang)
      */
     fetchMe: async (): Promise<User> => {
-        const res = await api.get<User>("/auth/me");
+        const res = await api.get<User>("auth/api/v1/users/profile");
         return res.data;
     },
 

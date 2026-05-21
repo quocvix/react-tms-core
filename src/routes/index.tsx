@@ -14,34 +14,69 @@ import ApiPage from "@/pages/projects/backend/ApiPage";
 import WorkersPage from "@/pages/projects/backend/WorkersPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
-export const router = createBrowserRouter(
-    createRoutesFromElements(
-        <>
-            <Route path="/login" element={<LoginPage />} />
-
-            <Route path="/" element={<Layout />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="dashboard" element={<DashboardPage />} />
-
-                <Route path="projects">
-                    <Route index element={<ProjectsPage />} />
-                    <Route path="frontend">
-                        <Route path="web-app" element={<WebAppPage />} />
-                        <Route path="landing-page" element={<LandingPage />} />
-                    </Route>
-                    <Route path="backend">
-                        <Route path="api" element={<ApiPage />} />
-                        <Route path="workers" element={<WorkersPage />} />
-                    </Route>
-                </Route>
-
-                <Route path="settings" element={<SettingsPage />} />
-
-                <Route path="*" element={<NotFoundPage />} />
-            </Route>
-
-            <Route path="*" element={<NotFoundPage />} />
-        </>
-    )
-);
+export const router = createBrowserRouter([
+    {
+        path: "/login",
+        element: <LoginPage />,
+    },
+    {
+        element: <ProtectedRoute />,
+        children: [
+            {
+                path: "/",
+                element: <Layout />,
+                children: [
+                    {
+                        index: true,
+                        element: <DashboardPage />,
+                    },
+                    {
+                        path: "projects",
+                        children: [
+                            {
+                                index: true,
+                                element: <ProjectsPage />,
+                            },
+                            {
+                                path: "frontend",
+                                children: [
+                                    {
+                                        path: "web-app",
+                                        element: <WebAppPage />,
+                                    },
+                                    {
+                                        path: "landing-page",
+                                        element: <LandingPage />,
+                                    },
+                                ],
+                            },
+                            {
+                                path: "backend",
+                                children: [
+                                    {
+                                        path: "api",
+                                        element: <ApiPage />,
+                                    },
+                                    {
+                                        path: "workers",
+                                        element: <WorkersPage />,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        path: "settings",
+                        element: <SettingsPage />,
+                    },
+                    {
+                        path: "*",
+                        element: <NotFoundPage />,
+                    },
+                ],
+            },
+        ],
+    },
+]);

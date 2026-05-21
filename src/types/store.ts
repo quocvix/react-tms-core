@@ -9,7 +9,7 @@ export interface AuthState {
 
     clearState: () => void;
 
-    signIn: (username: string, password: string) => Promise<void>;
+    signIn: (email: string, password: string, platform: string, device_id: string) => Promise<void>;
 
     signOut: () => Promise<void>;
     
