@@ -11,6 +11,7 @@ export const useAuthStore = create<AuthState>()(
                 user: null,
                 accessToken: null,
                 loading: false,
+                hasCheckedToken: false,
 
                 setAccessToken: (accessToken) => {
                     localStorage.setItem("access-token", accessToken);
@@ -22,6 +23,7 @@ export const useAuthStore = create<AuthState>()(
                         accessToken: null,
                         user: null,
                         loading: false,
+                        hasCheckedToken: false,
                     });
                     localStorage.clear();
                     sessionStorage.clear();
@@ -85,7 +87,7 @@ export const useAuthStore = create<AuthState>()(
                         const user = await authService.fetchMe();
 
                         // luu vao store
-                        set({ user });
+                        set({ user, hasCheckedToken: true });
 
                         // toast.success("Lấy thông tin người dùng thành công!");
                     } catch (error) {

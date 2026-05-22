@@ -44,13 +44,11 @@ export const LayoutHeader = () => {
 
     const displayUser = user
         ? {
-              name: user.full_name,
+              name: user.full_name || "Nguyen Van A",
               email: user.email || "",
               avatar: user.image || "/avatars/shadcn.jpg",
           }
         : MOCK_USER;
-
-    console.log(user);
 
     return (
         <header className="flex h-14 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">

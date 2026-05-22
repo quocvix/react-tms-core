@@ -3,21 +3,27 @@ import { Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 
+let isFetching = false;
+
 const ProtectedRoute = () => {
-    const { user, loading, fetchMe } = useAuthStore();
+    const { user, loading, fetchMe, hasCheckedToken } = useAuthStore();
     const token = localStorage.getItem("access-token");
     const [starting, setStarting] = useState(true);
 
     const init = async () => {
-        console.log("token", token);
-
         if (!token) {
             // await refresh();
         }
 
-        if (token) {
-            await fetchMe();
-            console.log("fetch me");
+        if (token && !hasCheckedToken && !isFetching) {
+            isFetching = true;
+            try {
+                await fetchMe();
+            } catch (error) {
+                console.error("Failed to fetch user profile:", error);
+            } finally {
+                isFetching = false;
+            }
         }
         setStarting(false);
     };
