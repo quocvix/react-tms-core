@@ -8,14 +8,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    BadgeCheckIcon,
-    ChevronsDown,
-    ChevronsUpDownIcon,
-    LogOutIcon,
-    SettingsIcon,
-} from "lucide-react";
-import { Button } from "../ui/button";
+import { BadgeCheckIcon } from "lucide-react";
+import { Logout } from "../auth/Logout";
 
 export type NavUserProps = {
     name: string;
@@ -87,18 +81,19 @@ export const NavUser = ({ user }: { user: NavUserProps }) => {
                         <BadgeCheckIcon className="h-4 w-4 text-muted-foreground" />
                         <span>Account</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2 cursor-pointer">
+                    {/* <DropdownMenuItem className="gap-2 cursor-pointer">
                         <SettingsIcon className="h-4 w-4 text-muted-foreground" />
                         <span>Settings</span>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                 </DropdownMenuGroup>
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive">
+                {/* <DropdownMenuItem className="gap-2 cursor-pointer text-destructive focus:text-destructive">
                     <LogOutIcon className="h-4 w-4" />
                     <span>Log out</span>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
+                <Logout />
             </DropdownMenuContent>
         </DropdownMenu>
     );

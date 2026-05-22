@@ -10,7 +10,6 @@ export interface SignInRequest {
     device_id: string;
 }
 
-
 export interface AuthResponse {
     accessToken: string;
     user: User;
@@ -36,20 +35,21 @@ const authService = {
         return res.data.data.token; // accessToken
     },
 
-
     /**
      * Đăng xuất — xóa refresh token phía server
      */
     signOut: async (): Promise<void> => {
-        await api.post("/auth/signout");
+        await api.post("/auth/api/logout");
     },
 
     /**
      * Lấy thông tin user hiện tại (dùng khi reload trang)
      */
     fetchMe: async (): Promise<User> => {
-        const res = await api.get<User>("auth/api/v1/users/profile");
-        return res.data;
+        const res = await api.get<{
+            data: User;
+        }>("auth/api/v1/users/profile");
+        return res.data.data;
     },
 
     /**
@@ -62,7 +62,10 @@ const authService = {
     /**
      * Đặt lại mật khẩu bằng token được gửi qua email
      */
-    resetPassword: async (token: string, newPassword: string): Promise<void> => {
+    resetPassword: async (
+        token: string,
+        newPassword: string,
+    ): Promise<void> => {
         await api.post("/auth/reset-password", { token, newPassword });
     },
 };

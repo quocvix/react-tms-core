@@ -5,6 +5,7 @@ import { Moon, Sun, Warehouse, Languages, Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { Notification } from "./notification";
 import { useThemeStore } from "@/stores/useThemeStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,11 +35,22 @@ const LANGUAGE_LIST = [
 
 export const LayoutHeader = () => {
     const { isDark, toggleTheme } = useThemeStore();
+    const { user } = useAuthStore();
     const [selectedHub, setSelectedHub] = useState("HCM");
     const [selectedLang, setSelectedLang] = useState("vi");
 
     const currentHub = HUB_LIST.find((h) => h.value === selectedHub);
     const currentLang = LANGUAGE_LIST.find((l) => l.value === selectedLang);
+
+    const displayUser = user
+        ? {
+              name: user.full_name,
+              email: user.email || "",
+              avatar: user.image || "/avatars/shadcn.jpg",
+          }
+        : MOCK_USER;
+
+    console.log(user);
 
     return (
         <header className="flex h-14 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -52,7 +64,9 @@ export const LayoutHeader = () => {
                 />
 
                 {/* Page title — ideally driven by router/breadcrumb */}
-                <span className="text-sm font-medium text-foreground">Dashboard</span>
+                <span className="text-sm font-medium text-foreground">
+                    Dashboard
+                </span>
 
                 {/* Right-side actions */}
                 <div className="ml-auto -mr-3 flex items-center gap-2">
@@ -61,12 +75,20 @@ export const LayoutHeader = () => {
                     {/* Hub dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="cursor-pointer gap-1.5 text-sm">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="cursor-pointer gap-1.5 text-sm"
+                            >
                                 <Warehouse className="h-4 w-4" />
                                 <span>{currentHub?.label}</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" sideOffset={6} className="w-44 rounded-lg">
+                        <DropdownMenuContent
+                            align="end"
+                            sideOffset={6}
+                            className="w-44 rounded-lg"
+                        >
                             <DropdownMenuLabel>Chọn Hub</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {HUB_LIST.map((hub) => (
@@ -88,12 +110,22 @@ export const LayoutHeader = () => {
                     {/* Language dropdown */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="cursor-pointer gap-1.5 text-sm">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="cursor-pointer gap-1.5 text-sm"
+                            >
                                 <Languages className="h-4 w-4" />
-                                <span>{currentLang?.flag} {currentLang?.label}</span>
+                                <span>
+                                    {currentLang?.flag} {currentLang?.label}
+                                </span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" sideOffset={6} className="w-44 rounded-lg">
+                        <DropdownMenuContent
+                            align="end"
+                            sideOffset={6}
+                            className="w-44 rounded-lg"
+                        >
                             <DropdownMenuLabel>Ngôn ngữ</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {LANGUAGE_LIST.map((lang) => (
@@ -112,10 +144,17 @@ export const LayoutHeader = () => {
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    <Button variant="ghost" size="icon-lg" className="cursor-pointer" onClick={toggleTheme}>
-                        {
-                            isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />
-                        }
+                    <Button
+                        variant="ghost"
+                        size="icon-lg"
+                        className="cursor-pointer"
+                        onClick={toggleTheme}
+                    >
+                        {isDark ? (
+                            <Sun className="h-5 w-5" />
+                        ) : (
+                            <Moon className="h-5 w-5" />
+                        )}
                     </Button>
 
                     <Separator
@@ -123,7 +162,7 @@ export const LayoutHeader = () => {
                         className="mx-1 my-3 self-stretch shrink-0"
                     />
 
-                    <NavUser user={MOCK_USER} />
+                    <NavUser user={displayUser} />
                 </div>
             </div>
         </header>

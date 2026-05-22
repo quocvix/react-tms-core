@@ -62,11 +62,11 @@ export const useAuthStore = create<AuthState>()(
                     try {
                         set({ loading: true });
 
-                        // xoa khoi store
-                        get().clearState();
-
                         // goi api
                         await authService.signOut();
+
+                        // xoa khoi store
+                        get().clearState();
 
                         toast.success("Đăng xuất thành công!");
                     } catch (error) {
