@@ -8,7 +8,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BadgeCheckIcon } from "lucide-react";
+import { User } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Logout } from "../auth/Logout";
 
 export type NavUserProps = {
@@ -77,9 +78,11 @@ export const NavUser = ({ user }: { user: NavUserProps }) => {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuGroup>
-                    <DropdownMenuItem className="gap-2 cursor-pointer">
-                        <BadgeCheckIcon className="h-4 w-4 text-muted-foreground" />
-                        <span>Account</span>
+                    <DropdownMenuItem className="gap-2 cursor-pointer" asChild>
+                        <Link to="/user">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span>Profile</span>
+                        </Link>
                     </DropdownMenuItem>
                     {/* <DropdownMenuItem className="gap-2 cursor-pointer">
                         <SettingsIcon className="h-4 w-4 text-muted-foreground" />

@@ -62,9 +62,9 @@ export const LayoutHeader = () => {
                 />
 
                 {/* Page title — ideally driven by router/breadcrumb */}
-                <span className="text-sm font-medium text-foreground">
+                {/* <span className="text-sm font-medium text-foreground">
                     Dashboard
-                </span>
+                </span> */}
 
                 {/* Right-side actions */}
                 <div className="ml-auto -mr-3 flex items-center gap-2">

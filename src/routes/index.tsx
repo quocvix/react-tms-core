@@ -13,6 +13,7 @@ import LandingPage from "@/pages/projects/frontend/LandingPage";
 import ApiPage from "@/pages/projects/backend/ApiPage";
 import WorkersPage from "@/pages/projects/backend/WorkersPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
+import UserPage from "@/pages/user/UserPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
                     {
                         path: "settings",
                         element: <SettingsPage />,
+                    },
+                    {
+                        path: "user",
+                        element: <UserPage />,
                     },
                     {
                         path: "*",
