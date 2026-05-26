@@ -101,6 +101,21 @@ export const useAuthStore = create<AuthState>()(
                         set({ loading: false });
                     }
                 },
+
+                setCurrentHub: (hub) => {
+                    const user = get().user;
+                    if (user) {
+                        set({
+                            user: {
+                                ...user,
+                                info: {
+                                    ...user.info,
+                                    current_hub: hub,
+                                },
+                            },
+                        });
+                    }
+                },
             }),
             {
                 name: "auth-storage",

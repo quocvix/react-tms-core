@@ -1,26 +1,35 @@
-import {
-    createBrowserRouter,
-    createRoutesFromElements,
-    Route,
-} from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { createBrowserRouter } from "react-router-dom";
 
 import Layout from "@/pages/Layout";
-import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/dashboard/DashboardPage";
-import ProjectsPage from "@/pages/projects/ProjectsPage";
-import WebAppPage from "@/pages/projects/frontend/WebAppPage";
-import LandingPage from "@/pages/projects/frontend/LandingPage";
-import ApiPage from "@/pages/projects/backend/ApiPage";
-import WorkersPage from "@/pages/projects/backend/WorkersPage";
-import SettingsPage from "@/pages/settings/SettingsPage";
-import UserPage from "@/pages/user/UserPage";
-import NotFoundPage from "@/pages/NotFoundPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
+// Lazy-loaded pages — each becomes its own chunk
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"));
+const ProjectsPage = lazy(() => import("@/pages/projects/ProjectsPage"));
+const WebAppPage = lazy(() => import("@/pages/projects/frontend/WebAppPage"));
+const LandingPage = lazy(() => import("@/pages/projects/frontend/LandingPage"));
+const ApiPage = lazy(() => import("@/pages/projects/backend/ApiPage"));
+const WorkersPage = lazy(() => import("@/pages/projects/backend/WorkersPage"));
+const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
+const UserPage = lazy(() => import("@/pages/user/UserPage"));
+const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
+
+/** Wrap a lazy component in Suspense with a loading spinner */
+const S = ({ children }: { children: React.ReactNode }) => (
+    <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
+);
 
 export const router = createBrowserRouter([
     {
         path: "/login",
-        element: <LoginPage />,
+        element: (
+            <S>
+                <LoginPage />
+            </S>
+        ),
     },
     {
         element: <ProtectedRoute />,
@@ -31,25 +40,41 @@ export const router = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: <DashboardPage />,
+                        element: (
+                            <S>
+                                <DashboardPage />
+                            </S>
+                        ),
                     },
                     {
                         path: "projects",
                         children: [
                             {
                                 index: true,
-                                element: <ProjectsPage />,
+                                element: (
+                                    <S>
+                                        <ProjectsPage />
+                                    </S>
+                                ),
                             },
                             {
                                 path: "frontend",
                                 children: [
                                     {
                                         path: "web-app",
-                                        element: <WebAppPage />,
+                                        element: (
+                                            <S>
+                                                <WebAppPage />
+                                            </S>
+                                        ),
                                     },
                                     {
                                         path: "landing-page",
-                                        element: <LandingPage />,
+                                        element: (
+                                            <S>
+                                                <LandingPage />
+                                            </S>
+                                        ),
                                     },
                                 ],
                             },
@@ -58,11 +83,19 @@ export const router = createBrowserRouter([
                                 children: [
                                     {
                                         path: "api",
-                                        element: <ApiPage />,
+                                        element: (
+                                            <S>
+                                                <ApiPage />
+                                            </S>
+                                        ),
                                     },
                                     {
                                         path: "workers",
-                                        element: <WorkersPage />,
+                                        element: (
+                                            <S>
+                                                <WorkersPage />
+                                            </S>
+                                        ),
                                     },
                                 ],
                             },
@@ -70,15 +103,27 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "settings",
-                        element: <SettingsPage />,
+                        element: (
+                            <S>
+                                <SettingsPage />
+                            </S>
+                        ),
                     },
                     {
                         path: "user",
-                        element: <UserPage />,
+                        element: (
+                            <S>
+                                <UserPage />
+                            </S>
+                        ),
                     },
                     {
                         path: "*",
-                        element: <NotFoundPage />,
+                        element: (
+                            <S>
+                                <NotFoundPage />
+                            </S>
+                        ),
                     },
                 ],
             },

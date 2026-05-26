@@ -113,6 +113,9 @@ export function LoginForm({
                         <img
                             src="src/assets/images/public/404_NotFound.png"
                             alt="Image"
+                            width={640}
+                            height={480}
+                            loading="lazy"
                             className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                         />
                     </div>

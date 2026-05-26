@@ -1,8 +1,6 @@
 import api from "@/lib/axios";
 import type { User } from "@/types/user";
 
-// ─── Request / Response Types ───────────────────────────────────────────────
-
 export interface SignInRequest {
     email: string;
     password: string;
@@ -15,12 +13,8 @@ export interface AuthResponse {
     user: User;
 }
 
-// ─── Auth Service ────────────────────────────────────────────────────────────
-
 const authService = {
-    /**
-     * Đăng nhập — trả về accessToken
-     */
+    // Đăng nhập — trả về accessToken
     signIn: async (request: SignInRequest) => {
         const res = await api.post(
             "/auth/api/login",
@@ -35,16 +29,12 @@ const authService = {
         return res.data.data.token; // accessToken
     },
 
-    /**
-     * Đăng xuất — xóa refresh token phía server
-     */
+    // Đăng xuất — xóa refresh token phía server
     signOut: async (): Promise<void> => {
         await api.post("/auth/api/logout");
     },
 
-    /**
-     * Lấy thông tin user hiện tại (dùng khi reload trang)
-     */
+    // Lấy thông tin user hiện tại (dùng khi reload trang)
     fetchMe: async (): Promise<User> => {
         const res = await api.get<{
             data: User;
@@ -52,16 +42,12 @@ const authService = {
         return res.data.data;
     },
 
-    /**
-     * Yêu cầu gửi email reset password
-     */
+    // Yêu cầu gửi email reset password
     forgotPassword: async (email: string): Promise<void> => {
         await api.post("/auth/forgot-password", { email });
     },
 
-    /**
-     * Đặt lại mật khẩu bằng token được gửi qua email
-     */
+    // Đặt lại mật khẩu bằng token được gửi qua email
     resetPassword: async (
         token: string,
         newPassword: string,

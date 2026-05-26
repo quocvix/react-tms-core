@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { NavUser, type NavUserProps } from "./nav-user";
-import { Moon, Sun, Warehouse, Languages, Check } from "lucide-react";
+import { Moon, Sun, Languages, Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { Notification } from "./notification";
 import { useThemeStore } from "@/stores/useThemeStore";
@@ -16,19 +16,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import HubInfo from "./hub-info";
 
 const MOCK_USER: NavUserProps = {
     name: "Nguyen Van A",
     email: "nguyenvana@example.com",
     avatar: "/avatars/shadcn.jpg",
 };
-
-const HUB_LIST = [
-    { value: "HCM", label: "HCM" },
-    { value: "HN", label: "Hà Nội" },
-    { value: "DN", label: "Đà Nẵng" },
-];
 
 const LANGUAGE_LIST = [
     { value: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
@@ -40,9 +34,7 @@ export const LayoutHeader = () => {
     const { isDark, toggleTheme } = useThemeStore();
     const { user } = useAuthStore();
     const { language, setLanguage } = useLanguageStore();
-    const [selectedHub, setSelectedHub] = useState("HCM");
 
-    const currentHub = HUB_LIST.find((h) => h.value === selectedHub);
     const currentLang = LANGUAGE_LIST.find((l) => l.value === language);
 
     const displayUser = user
@@ -74,39 +66,7 @@ export const LayoutHeader = () => {
                     <Notification />
 
                     {/* Hub dropdown */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer gap-1.5 text-sm"
-                            >
-                                <Warehouse className="h-4 w-4" />
-                                <span>{currentHub?.label}</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="end"
-                            sideOffset={6}
-                            className="w-44 rounded-lg"
-                        >
-                            <DropdownMenuLabel>{t("Select Hub")}</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {HUB_LIST.map((hub) => (
-                                <DropdownMenuItem
-                                    key={hub.value}
-                                    className="cursor-pointer gap-2"
-                                    onClick={() => setSelectedHub(hub.value)}
-                                >
-                                    <Warehouse className="h-4 w-4 text-muted-foreground" />
-                                    <span>{hub.label}</span>
-                                    {selectedHub === hub.value && (
-                                        <Check className="ml-auto h-4 w-4 text-primary" />
-                                    )}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <HubInfo />
 
                     {/* Language dropdown */}
                     <DropdownMenu>
@@ -127,7 +87,9 @@ export const LayoutHeader = () => {
                             sideOffset={6}
                             className="w-44 rounded-lg"
                         >
-                            <DropdownMenuLabel>{t("Language")}</DropdownMenuLabel>
+                            <DropdownMenuLabel>
+                                {t("Language")}
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {LANGUAGE_LIST.map((lang) => (
                                 <DropdownMenuItem

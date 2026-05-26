@@ -1,4 +1,4 @@
-import type { User } from "./user";
+import type { User, CurrentHub } from "./user";
 
 export interface AuthState {
     user: User | null;
@@ -15,6 +15,8 @@ export interface AuthState {
     signOut: () => Promise<void>;
     
     fetchMe: () => Promise<void>;
+
+    setCurrentHub: (hub: CurrentHub) => void;
 }
 
 export interface ThemeState {

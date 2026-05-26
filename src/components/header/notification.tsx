@@ -190,7 +190,7 @@ export function Notification() {
                     {unreadCount > 0 && (
                         <span
                             className={cn(
-                                "absolute top-0.5 flex h-3 min-w-3 translate-x-1/2 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-1 ring-background",
+                                "absolute top-0 flex h-3 min-w-3 translate-x-1/2 items-center justify-center rounded-full bg-destructive px-1 py-2 text-[10px] font-bold text-destructive-foreground ring-1 ring-background",
                                 unreadCount > 9 ? "right-1.5" : "right-2.5",
                             )}
                         >

@@ -40,6 +40,9 @@ export const AppSidebar = ({
                                     <img
                                         src="src/assets/images/public/404_NotFound.png"
                                         alt="Logo"
+                                        width={320}
+                                        height={180}
+                                        loading="eager"
                                         style={{
                                             width: "100%",
                                             height: "100%",
