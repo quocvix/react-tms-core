@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Logout } from "../auth/Logout";
 
 export type NavUserProps = {
@@ -19,6 +20,7 @@ export type NavUserProps = {
 };
 
 export const NavUser = ({ user }: { user: NavUserProps }) => {
+    const { t } = useTranslation();
     const initials = user.name
         .split(" ")
         .map((n) => n[0])
@@ -81,7 +83,7 @@ export const NavUser = ({ user }: { user: NavUserProps }) => {
                     <DropdownMenuItem className="gap-2 cursor-pointer" asChild>
                         <Link to="/user">
                             <User className="h-4 w-4 text-muted-foreground" />
-                            <span>Profile</span>
+                            <span>{t("Profile")}</span>
                         </Link>
                     </DropdownMenuItem>
                     {/* <DropdownMenuItem className="gap-2 cursor-pointer">

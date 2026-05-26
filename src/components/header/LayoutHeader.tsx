@@ -6,6 +6,8 @@ import { Button } from "../ui/button";
 import { Notification } from "./notification";
 import { useThemeStore } from "@/stores/useThemeStore";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useLanguageStore } from "@/stores/useLanguageStore";
+import { useTranslation } from "react-i18next";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -34,13 +36,14 @@ const LANGUAGE_LIST = [
 ];
 
 export const LayoutHeader = () => {
+    const { t } = useTranslation();
     const { isDark, toggleTheme } = useThemeStore();
     const { user } = useAuthStore();
+    const { language, setLanguage } = useLanguageStore();
     const [selectedHub, setSelectedHub] = useState("HCM");
-    const [selectedLang, setSelectedLang] = useState("vi");
 
     const currentHub = HUB_LIST.find((h) => h.value === selectedHub);
-    const currentLang = LANGUAGE_LIST.find((l) => l.value === selectedLang);
+    const currentLang = LANGUAGE_LIST.find((l) => l.value === language);
 
     const displayUser = user
         ? {
@@ -87,7 +90,7 @@ export const LayoutHeader = () => {
                             sideOffset={6}
                             className="w-44 rounded-lg"
                         >
-                            <DropdownMenuLabel>Chọn Hub</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("Select Hub")}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {HUB_LIST.map((hub) => (
                                 <DropdownMenuItem
@@ -124,17 +127,17 @@ export const LayoutHeader = () => {
                             sideOffset={6}
                             className="w-44 rounded-lg"
                         >
-                            <DropdownMenuLabel>Ngôn ngữ</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("Language")}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {LANGUAGE_LIST.map((lang) => (
                                 <DropdownMenuItem
                                     key={lang.value}
                                     className="cursor-pointer gap-2"
-                                    onClick={() => setSelectedLang(lang.value)}
+                                    onClick={() => setLanguage(lang.value)}
                                 >
                                     <span>{lang.flag}</span>
                                     <span>{lang.label}</span>
-                                    {selectedLang === lang.value && (
+                                    {language === lang.value && (
                                         <Check className="ml-auto h-4 w-4 text-primary" />
                                     )}
                                 </DropdownMenuItem>

@@ -9,20 +9,22 @@ import { useForm } from "react-hook-form";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router";
 import { Label } from "../ui/label";
-
-const signInSchema = z.object({
-    email: z.string().min(1, "Email is required"),
-    password: z.string().min(1, "Password is required"),
-});
-
-type SignInSchemaValues = z.infer<typeof signInSchema>;
+import { useTranslation } from "react-i18next";
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<"div">) {
+    const { t } = useTranslation();
     const { signIn } = useAuthStore();
     const navigate = useNavigate();
+
+    const signInSchema = z.object({
+        email: z.string().min(1, t("Email is required")),
+        password: z.string().min(1, t("Password is required")),
+    });
+
+    type SignInSchemaValues = z.infer<typeof signInSchema>;
 
     const {
         register,
@@ -55,20 +57,20 @@ export function LoginForm({
                         <div className="flex flex-col gap-6">
                             <div className="flex flex-col items-center gap-2 text-center">
                                 <h1 className="text-2xl font-bold">
-                                    Welcome back
+                                    {t("Welcome back")}
                                 </h1>
                                 <p className="text-balance text-muted-foreground">
-                                    Login to your account
+                                    {t("Login to your account")}
                                 </p>
                             </div>
 
                             {/* email */}
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">{t("Email")}</Label>
                                 <Input
                                     id="email"
                                     type="text"
-                                    placeholder="Nhập email của bạn"
+                                    placeholder={t("Enter your email")}
                                     {...register("email")}
                                 />
                                 {errors.email && (
@@ -80,7 +82,7 @@ export function LoginForm({
 
                             {/* password */}
                             <div className="space-y-2">
-                                <Label htmlFor="password">Mật khẩu</Label>
+                                <Label htmlFor="password">{t("Password")}</Label>
                                 <Input
                                     id="password"
                                     type="password"
@@ -100,8 +102,8 @@ export function LoginForm({
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting
-                                    ? "Đang đăng nhập..."
-                                    : "Đăng nhập"}
+                                    ? t("Logging in...")
+                                    : t("Login")}
                             </Button>
                         </div>
                     </form>

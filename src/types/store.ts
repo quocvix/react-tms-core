@@ -22,3 +22,8 @@ export interface ThemeState {
     toggleTheme: () => void;
     setTheme: (dark: boolean) => void;
 }
+
+export interface LanguageState {
+    language: string;
+    setLanguage: (lang: string) => void;
+}

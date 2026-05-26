@@ -3,7 +3,8 @@
 import * as React from "react";
 
 import { SidebarNavItem } from "@/components/sidebar/sidebar-nav-item";
-import { sidebarMenu } from "@/lib/sidebar-data";
+import { getSidebarMenu } from "@/lib/sidebar-data";
+import { useTranslation } from "react-i18next";
 import {
     Sidebar,
     SidebarContent,
@@ -19,6 +20,9 @@ import {
 export const AppSidebar = ({
     ...props
 }: React.ComponentProps<typeof Sidebar>) => {
+    const { t } = useTranslation();
+    const sidebarMenu = getSidebarMenu(t);
+
     return (
         <Sidebar collapsible="icon" variant="inset" {...props}>
             <SidebarHeader>

@@ -8,15 +8,17 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-
-const TABS = [
-    { id: "profile", label: "Profile", icon: User },
-    { id: "password", label: "Change Password", icon: Lock },
-];
+import { useTranslation } from "react-i18next";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const UserPage = () => {
+    const { t } = useTranslation();
     const { user } = useAuthStore();
-    const [activeTab, setActiveTab] = useState("profile");
+
+    const TABS = [
+        { id: "profile", label: t("Profile"), icon: User },
+        { id: "password", label: t("Change Password"), icon: Lock },
+    ];
 
     // Profile Form State
     const [username, setUsername] = useState(user?.user_name || "");
@@ -49,22 +51,22 @@ const UserPage = () => {
         if (file) {
             const url = URL.createObjectURL(file);
             setAvatarUrl(url);
-            toast.success("Avatar uploaded successfully!");
+            toast.success(t("Avatar uploaded successfully!"));
         }
     };
 
     const handleProfileSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        toast.success("Profile updated successfully!");
+        toast.success(t("Profile updated successfully!"));
     };
 
     const handlePasswordSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
-            toast.error("New passwords do not match!");
+            toast.error(t("New passwords do not match!"));
             return;
         }
-        toast.success("Password updated successfully!");
+        toast.success(t("Password updated successfully!"));
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
@@ -72,35 +74,34 @@ const UserPage = () => {
 
     return (
         <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 pt-0">
-            {/* Split Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-8 items-start">
+            <Tabs
+                defaultValue="profile"
+                className="grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-8 items-start"
+            >
                 {/* Left Navigation Card */}
-                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-card p-3 space-y-1 shadow-sm">
+                <TabsList className="flex flex-col h-auto justify-start border border-zinc-200 dark:border-zinc-800 rounded-xl bg-card p-3 space-y-1 shadow-sm w-full">
                     {TABS.map((tab) => {
                         const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
                         return (
-                            <button
+                            <TabsTrigger
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={cn(
-                                    "flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-left cursor-pointer",
-                                    isActive
-                                        ? "bg-zinc-100 text-zinc-900 font-semibold dark:bg-zinc-800 dark:text-zinc-50"
-                                        : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-200",
-                                )}
+                                value={tab.id}
+                                className="flex items-center justify-start gap-3 w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-all text-left cursor-pointer data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-50 data-[state=active]:font-semibold data-[state=active]:shadow-none hover:bg-zinc-50 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-zinc-200 text-zinc-500 dark:text-zinc-400"
                             >
                                 <Icon className="h-4 w-4 shrink-0" />
                                 <span>{tab.label}</span>
-                            </button>
+                            </TabsTrigger>
                         );
                     })}
-                </div>
+                </TabsList>
 
                 {/* Right Form Card */}
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl bg-card p-6 md:p-8 shadow-sm">
                     {/* Tab Content 1: PROFILE */}
-                    {activeTab === "profile" && (
+                    <TabsContent
+                        value="profile"
+                        className="m-0 border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    >
                         <form
                             onSubmit={handleProfileSubmit}
                             className="space-y-6"
@@ -120,12 +121,12 @@ const UserPage = () => {
                                     <Button
                                         type="button"
                                         onClick={handleUploadClick}
-                                        className="bg-black hover:bg-zinc-900 text-white font-medium px-4 py-2.5 rounded-lg transition-colors cursor-pointer dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+                                        className="cursor-pointer"
                                     >
-                                        Upload new image
+                                        {t("Upload new image")}
                                     </Button>
                                     <p className="text-xs text-muted-foreground">
-                                        PNG, JPG or GIF. Max size 2MB.
+                                        {t("PNG, JPG or GIF. Max size 2MB.")}
                                     </p>
                                 </div>
                                 <input
@@ -144,14 +145,14 @@ const UserPage = () => {
                                     {/* Username Field */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground">
-                                            Username
+                                            {t("Username")}
                                         </label>
                                         <Input
                                             value={username}
                                             onChange={(e) =>
                                                 setUsername(e.target.value)
                                             }
-                                            placeholder="Username"
+                                            placeholder={t("Username")}
                                             required
                                         />
                                     </div>
@@ -159,12 +160,14 @@ const UserPage = () => {
                                     {/* Email Field */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground">
-                                            Email
+                                            {t("Email")}
                                         </label>
                                         <Input
                                             value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            placeholder="Email"
+                                            onChange={(e) =>
+                                                setEmail(e.target.value)
+                                            }
+                                            placeholder={t("Email")}
                                             disabled
                                         />
                                     </div>
@@ -172,28 +175,28 @@ const UserPage = () => {
                                     {/* First Name Field */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground">
-                                            First Name
+                                            {t("First Name")}
                                         </label>
                                         <Input
                                             value={first_name}
                                             onChange={(e) =>
                                                 setFirstName(e.target.value)
                                             }
-                                            placeholder="First Name"
+                                            placeholder={t("First Name")}
                                         />
                                     </div>
 
                                     {/* Last Name Field */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground">
-                                            Last Name
+                                            {t("Last Name")}
                                         </label>
                                         <Input
                                             value={last_name}
                                             onChange={(e) =>
                                                 setLastName(e.target.value)
                                             }
-                                            placeholder="Last Name"
+                                            placeholder={t("Last Name")}
                                         />
                                     </div>
                                 </div>
@@ -203,35 +206,35 @@ const UserPage = () => {
                                     {/* Contact Phone Field */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground">
-                                            Contact Phone
+                                            {t("Contact Phone")}
                                         </label>
                                         <Input
                                             value={contact_phone}
                                             onChange={(e) =>
                                                 setContactPhone(e.target.value)
                                             }
-                                            placeholder="Contact Phone"
+                                            placeholder={t("Contact Phone")}
                                         />
                                     </div>
 
                                     {/* Contact Email Field */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground">
-                                            Contact Email
+                                            {t("Contact Email")}
                                         </label>
                                         <Input
                                             value={contact_email}
                                             onChange={(e) =>
                                                 setContactEmail(e.target.value)
                                             }
-                                            placeholder="Contact Email"
+                                            placeholder={t("Contact Email")}
                                         />
                                     </div>
 
                                     {/* Gender Field */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground">
-                                            Gender
+                                            {t("Gender")}
                                         </label>
                                         <RadioGroup
                                             value={gender}
@@ -239,15 +242,28 @@ const UserPage = () => {
                                             className="flex flex-col gap-3 pt-1"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <RadioGroupItem value="MALE" id="r1" />
-                                                <Label htmlFor="r1" className="cursor-pointer font-normal">Male</Label>
+                                                <RadioGroupItem
+                                                    value="MALE"
+                                                    id="r1"
+                                                />
+                                                <Label
+                                                    htmlFor="r1"
+                                                    className="cursor-pointer font-normal"
+                                                >
+                                                    {t("Male")}
+                                                </Label>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <RadioGroupItem
                                                     value="FEMALE"
                                                     id="r2"
                                                 />
-                                                <Label htmlFor="r2" className="cursor-pointer font-normal">Female</Label>
+                                                <Label
+                                                    htmlFor="r2"
+                                                    className="cursor-pointer font-normal"
+                                                >
+                                                    {t("Female")}
+                                                </Label>
                                             </div>
                                         </RadioGroup>
                                     </div>
@@ -258,23 +274,26 @@ const UserPage = () => {
                             <div className="pt-4 border-t border-zinc-150 dark:border-zinc-800">
                                 <Button
                                     type="submit"
-                                    className="bg-black hover:bg-zinc-900 text-white font-medium px-5 py-2.5 rounded-lg transition-colors cursor-pointer dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
+                                    className="cursor-pointer"
                                 >
-                                    Update profile
+                                    {t("Update profile")}
                                 </Button>
                             </div>
                         </form>
-                    )}
+                    </TabsContent>
 
                     {/* Tab Content 2: CHANGE PASSWORD */}
-                    {activeTab === "password" && (
+                    <TabsContent
+                        value="password"
+                        className="m-0 border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    >
                         <form
                             onSubmit={handlePasswordSubmit}
                             className="space-y-6"
                         >
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-foreground">
-                                    Current Password
+                                    {t("Current Password")}
                                 </label>
                                 <Input
                                     type="password"
@@ -282,14 +301,14 @@ const UserPage = () => {
                                     onChange={(e) =>
                                         setCurrentPassword(e.target.value)
                                     }
-                                    placeholder="Enter current password"
+                                    placeholder={t("Enter current password")}
                                     required
                                 />
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-foreground">
-                                    New Password
+                                    {t("New Password")}
                                 </label>
                                 <Input
                                     type="password"
@@ -297,14 +316,14 @@ const UserPage = () => {
                                     onChange={(e) =>
                                         setNewPassword(e.target.value)
                                     }
-                                    placeholder="Enter new password"
+                                    placeholder={t("Enter new password")}
                                     required
                                 />
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-foreground">
-                                    Confirm New Password
+                                    {t("Confirm New Password")}
                                 </label>
                                 <Input
                                     type="password"
@@ -312,21 +331,18 @@ const UserPage = () => {
                                     onChange={(e) =>
                                         setConfirmPassword(e.target.value)
                                     }
-                                    placeholder="Confirm new password"
+                                    placeholder={t("Confirm new password")}
                                     required
                                 />
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="bg-black hover:bg-zinc-900 text-white font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200"
-                            >
-                                Update password
+                            <Button type="submit" className="cursor-pointer">
+                                {t("Update password")}
                             </Button>
                         </form>
-                    )}
+                    </TabsContent>
                 </div>
-            </div>
+            </Tabs>
         </div>
     );
 };

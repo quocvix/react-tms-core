@@ -2,8 +2,10 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { useNavigate } from "react-router";
 import { LogOutIcon } from "lucide-react";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
 
 export function Logout() {
+    const { t } = useTranslation();
     const { signOut } = useAuthStore();
     const navigate = useNavigate();
 
@@ -22,7 +24,7 @@ export function Logout() {
             onClick={handleLogout}
         >
             <LogOutIcon className="h-4 w-4" />
-            <span>Log out</span>
+            <span>{t("Log out")}</span>
         </DropdownMenuItem>
     );
 }

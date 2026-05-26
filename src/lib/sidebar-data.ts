@@ -8,32 +8,33 @@ import {
 } from "lucide-react";
 
 import type { SidebarRootItem } from "@/components/sidebar/sidebar-nav-item";
+import type { TFunction } from "i18next";
 
-export const sidebarMenu: SidebarRootItem[] = [
+export const getSidebarMenu = (t: TFunction): SidebarRootItem[] => [
     {
-        title: "Dashboard",
+        title: t("Dashboard"),
         url: "/",
         icon: LayoutDashboard,
     },
     {
-        title: "Projects",
+        title: t("Projects"),
         icon: FolderKanban,
         children: [
-            { title: "Overview", url: "/projects" },
-            { title: "Active Projects", url: "/projects/active" },
+            { title: t("Overview"), url: "/projects" },
+            { title: t("Active Projects"), url: "/projects/active" },
             {
-                title: "Teams",
+                title: t("Teams"),
                 children: [
                     {
-                        title: "Engineering",
+                        title: t("Engineering"),
                         url: "/projects/teams/engineering",
                     },
-                    { title: "Design", url: "/projects/teams/design" },
-                    { title: "Product", url: "/projects/teams/product" },
+                    { title: t("Design"), url: "/projects/teams/design" },
+                    { title: t("Product"), url: "/projects/teams/product" },
                 ],
             },
             {
-                title: "Archive",
+                title: t("Archive"),
                 children: [
                     { title: "2025", url: "/projects/archive/2025" },
                     { title: "2024", url: "/projects/archive/2024" },
@@ -42,17 +43,17 @@ export const sidebarMenu: SidebarRootItem[] = [
         ],
     },
     {
-        title: "Customers",
+        title: t("Customers"),
         icon: Users,
         children: [
             // { title: "All Customers", url: "/customers" },
             {
-                title: "Segments",
+                title: t("Segments"),
                 children: [
-                    { title: "VIP", url: "/customers/segments/vip" },
-                    { title: "New", url: "/customers/segments/new" },
+                    { title: t("VIP"), url: "/customers/segments/vip" },
+                    { title: t("New"), url: "/customers/segments/new" },
                     {
-                        title: "Churn Risk",
+                        title: t("Churn Risk"),
                         url: "/customers/segments/churn-risk",
                     },
                 ],
@@ -60,31 +61,31 @@ export const sidebarMenu: SidebarRootItem[] = [
         ],
     },
     {
-        title: "Billing",
+        title: t("Billing"),
         icon: ReceiptText,
         children: [
-            { title: "Invoices", url: "/billing/invoices" },
-            { title: "Subscriptions", url: "/billing/subscriptions" },
-            { title: "Reports", url: "/billing/reports" },
+            { title: t("Invoices"), url: "/billing/invoices" },
+            { title: t("Subscriptions"), url: "/billing/subscriptions" },
+            { title: t("Reports"), url: "/billing/reports" },
         ],
     },
     {
-        title: "Administration",
+        title: t("Administration"),
         icon: ShieldCheck,
         children: [
-            { title: "Roles", url: "/admin/roles" },
-            { title: "Permissions", url: "/admin/permissions" },
-            { title: "Audit Logs", url: "/admin/audit-logs" },
+            { title: t("Roles"), url: "/admin/roles" },
+            { title: t("Permissions"), url: "/admin/permissions" },
+            { title: t("Audit Logs"), url: "/admin/audit-logs" },
         ],
     },
     {
-        title: "Settings",
+        title: t("Settings"),
         icon: Settings,
         children: [
-            { title: "Profile", url: "/settings/profile" },
-            { title: "Workspace", url: "/settings/workspace" },
+            { title: t("Profile"), url: "/settings/profile" },
+            { title: t("Workspace"), url: "/settings/workspace" },
             {
-                title: "Integrations",
+                title: t("Integrations"),
                 children: [
                     { title: "Slack", url: "/settings/integrations/slack" },
                     { title: "GitHub", url: "/settings/integrations/github" },
@@ -95,4 +96,4 @@ export const sidebarMenu: SidebarRootItem[] = [
     },
 ];
 
-export default sidebarMenu;
+export default getSidebarMenu;
