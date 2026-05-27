@@ -12,7 +12,7 @@ export function Logout() {
     const handleLogout = async () => {
         try {
             await signOut();
-            // navigate("/login");
+            navigate("/login");
         } catch (error) {
             console.log(error);
         }

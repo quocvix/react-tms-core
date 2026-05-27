@@ -1,3 +1,4 @@
+import API from "@/lib/api";
 import api from "@/lib/axios";
 
 export interface HubItem {
@@ -14,15 +15,18 @@ export interface UserInHubsResponse {
 const hubService = {
     getUserInHub: async () => {
         const res = await api.get<UserInHubsResponse>(
-            "master-data/api/v1/gonsa/hub/user-in-hub",
+            API.URL_MASTER_DATA_V1 + "/gonsa/hub/user-in-hub",
         );
         return res.data;
     },
 
     postSelectHub: async (hub_id: number) => {
-        const res = await api.put("/api/api/v1/gonsa/users/selected-hub", {
-            hub_id: hub_id,
-        });
+        const res = await api.put(
+            API.URL_API_V1 + "/gonsa/users/selected-hub",
+            {
+                hub_id: hub_id,
+            },
+        );
         return res.data;
     },
 };

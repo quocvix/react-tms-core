@@ -42,6 +42,11 @@ const authService = {
         return res.data.data;
     },
 
+    fetchPermission: async (): Promise<{ data: {}[] }> => {
+        const res = await api.get("api/api/v1/users/permissions");
+        return res.data;
+    },
+
     // Yêu cầu gửi email reset password
     forgotPassword: async (email: string): Promise<void> => {
         await api.post("/auth/forgot-password", { email });

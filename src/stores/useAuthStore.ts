@@ -12,6 +12,7 @@ export const useAuthStore = create<AuthState>()(
                 accessToken: null,
                 loading: false,
                 hasCheckedToken: false,
+                permission: { data: [] },
 
                 setAccessToken: (accessToken) => {
                     localStorage.setItem("access-token", accessToken);
@@ -24,6 +25,7 @@ export const useAuthStore = create<AuthState>()(
                         user: null,
                         loading: false,
                         hasCheckedToken: false,
+                        permission: { data: [] },
                     });
                     localStorage.clear();
                     sessionStorage.clear();
@@ -89,6 +91,9 @@ export const useAuthStore = create<AuthState>()(
                         // luu vao store
                         set({ user, hasCheckedToken: true });
 
+                        // gọi permission
+                        await get().fetchPermission();
+
                         // toast.success("Lấy thông tin người dùng thành công!");
                     } catch (error) {
                         console.log(error);
@@ -114,6 +119,27 @@ export const useAuthStore = create<AuthState>()(
                                 },
                             },
                         });
+                    }
+                },
+
+                fetchPermission: async () => {
+                    try {
+                        set({ loading: true });
+
+                        // goi api
+                        const permission = await authService.fetchPermission();
+
+                        // luu vao store
+                        set({ permission });
+                    } catch (error) {
+                        console.log(error);
+                        get().clearState();
+                        toast.error(
+                            "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại",
+                        );
+                        window.location.href = "/login";
+                    } finally {
+                        set({ loading: false });
                     }
                 },
             }),

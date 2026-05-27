@@ -5,16 +5,24 @@ export interface AuthState {
     accessToken: string | null;
     loading: boolean;
     hasCheckedToken: boolean;
+    permission: { data: {}[] } | null;
 
     setAccessToken: (accessToken: string) => void;
 
     clearState: () => void;
 
-    signIn: (email: string, password: string, platform: string, device_id: string) => Promise<void>;
+    signIn: (
+        email: string,
+        password: string,
+        platform: string,
+        device_id: string,
+    ) => Promise<void>;
 
     signOut: () => Promise<void>;
-    
+
     fetchMe: () => Promise<void>;
+
+    fetchPermission: () => Promise<void>;
 
     setCurrentHub: (hub: CurrentHub) => void;
 }
@@ -27,5 +35,7 @@ export interface ThemeState {
 
 export interface LanguageState {
     language: string;
-    setLanguage: (lang: string) => void;
+    isLoadingLanguage: boolean;
+    setLanguage: (lang: string) => Promise<void>;
+    fetchLanguages: (langCode?: string) => Promise<void>;
 }
