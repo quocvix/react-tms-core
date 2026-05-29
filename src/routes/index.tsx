@@ -15,6 +15,13 @@ const ApiPage = lazy(() => import("@/pages/projects/backend/ApiPage"));
 const WorkersPage = lazy(() => import("@/pages/projects/backend/WorkersPage"));
 const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 const UserPage = lazy(() => import("@/pages/user/UserPage"));
+
+// admin pages
+const PermissionPage = lazy(
+    () => import("@/pages/admin/permission/RolePermission"),
+);
+
+// not found page
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 /** Wrap a lazy component in Suspense with a loading spinner */
@@ -98,6 +105,19 @@ export const router = createBrowserRouter([
                                         ),
                                     },
                                 ],
+                            },
+                        ],
+                    },
+                    {
+                        path: "admin",
+                        children: [
+                            {
+                                path: "permission",
+                                element: (
+                                    <S>
+                                        <PermissionPage />
+                                    </S>
+                                ),
                             },
                         ],
                     },

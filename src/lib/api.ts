@@ -3,6 +3,7 @@ const API = {
     URL_AUTH: "/auth",
     URL_MASTER_DATA: "/master-data",
     URL_API_V1: "/api/v1",
+    URL_API_API_V1: "/api/api/v1",
     URL_AUTH_V1: "/auth/api/v1",
     URL_MASTER_DATA_V1: "/master-data/api/v1",
     URL_LOGS: "/logs/api/v1",

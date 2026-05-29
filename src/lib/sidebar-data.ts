@@ -73,8 +73,7 @@ export const getSidebarMenu = (t: TFunction): SidebarRootItem[] => [
         title: t("Administration"),
         icon: ShieldCheck,
         children: [
-            { title: t("Roles"), url: "/admin/roles" },
-            { title: t("Permissions"), url: "/admin/permissions" },
+            { title: t("Role & Permission"), url: "/admin/permission" },
             { title: t("Audit Logs"), url: "/admin/audit-logs" },
         ],
     },

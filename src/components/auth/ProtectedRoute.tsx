@@ -6,7 +6,7 @@ import { Navigate, Outlet } from "react-router-dom";
 let isFetching = false;
 
 const ProtectedRoute = () => {
-    const { user, loading, fetchMe, hasCheckedToken } = useAuthStore();
+    const { loading, fetchMe, hasCheckedToken } = useAuthStore();
     const token = localStorage.getItem("access-token");
     const [starting, setStarting] = useState(true);
 

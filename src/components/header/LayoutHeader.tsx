@@ -56,7 +56,6 @@ export const LayoutHeader = () => {
                     className="mx-1 my-3 self-stretch shrink-0"
                 />
 
-                {/* Page title — ideally driven by router/breadcrumb */}
                 {/* <span className="text-sm font-medium text-foreground">
                     Dashboard
                 </span> */}
