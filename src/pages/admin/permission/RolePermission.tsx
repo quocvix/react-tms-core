@@ -17,6 +17,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import permissionService from "@/services/permissionService";
 import type { RoleItem, PermissionGroup } from "@/types/role-permission";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { toast } from "sonner";
 
 export default function PermissionSettings() {
     const mainRef = useRef<HTMLElement>(null);
@@ -26,10 +27,10 @@ export default function PermissionSettings() {
     const [rolesList, setRolesList] = useState<RoleItem[]>([]);
     const [isLoadingRoles, setIsLoadingRoles] = useState(false);
     const [activeRoleId, setActiveRoleId] = useState<string>("");
-    const [permissionGroupsList, setPermissionGroupsList] = useState<
-        PermissionGroup[]
-    >([]);
+    const [permissionGroupsList, setPermissionGroupsList] = useState<PermissionGroup[]>([]);
     const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
+    const [assignedPermissionIds, setAssignedPermissionIds] = useState<string[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
 
     const activeRole =
         rolesList.find((r) => String(r.id) === activeRoleId) || rolesList[0];
@@ -50,6 +51,16 @@ export default function PermissionSettings() {
         }
     }, []);
 
+    const fetchRoleDetail = useCallback(async (roleId: number) => {
+        if (!roleId) return;
+        try {
+            const res = await permissionService.getRoleDetail(roleId);
+            setAssignedPermissionIds(res.permission_ids || []);
+        } catch (error) {
+            console.error("Failed to fetch role detail:", error);
+        }
+    }, []);
+
     const fetchPermissions = useCallback(async (roleId: string) => {
         if (!roleId) return;
         setIsLoadingPermissions(true);
@@ -58,12 +69,13 @@ export default function PermissionSettings() {
                 `?role_id=${roleId}`,
             );
             setPermissionGroupsList(res.data || []);
+            await fetchRoleDetail(Number(roleId));
         } catch (error) {
             console.error("Failed to fetch permissions:", error);
         } finally {
             setIsLoadingPermissions(false);
         }
-    }, []);
+    }, [fetchRoleDetail]);
 
     useEffect(() => {
         fetchRoles();
@@ -74,6 +86,20 @@ export default function PermissionSettings() {
             fetchPermissions(activeRoleId);
         }
     }, [activeRoleId, fetchPermissions]);
+
+    const handleSavePermissions = async () => {
+        if (!activeRoleId) return;
+        setIsSaving(true);
+        try {
+            await permissionService.givePermission(Number(activeRoleId), assignedPermissionIds);
+            toast.success(t("Save permissions successfully"));
+        } catch (error) {
+            console.error("Failed to save permissions:", error);
+            toast.error(t("Failed to save permissions"));
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const calcHeight = useCallback(() => {
         const mainH = mainRef.current?.clientHeight ?? 0;
@@ -87,7 +113,7 @@ export default function PermissionSettings() {
         calcHeight();
         window.addEventListener("resize", calcHeight);
         return () => window.removeEventListener("resize", calcHeight);
-    }, [calcHeight, activeRoleId, rolesList, permissionGroupsList]);
+    }, [calcHeight, activeRoleId, rolesList, permissionGroupsList, assignedPermissionIds]);
 
     return (
         <Tabs
@@ -232,6 +258,18 @@ export default function PermissionSettings() {
                                             >
                                                 <Checkbox
                                                     id={`all-${group.group}`}
+                                                    checked={group.permissions.every((perm) => assignedPermissionIds.includes(String(perm.id)))}
+                                                    onCheckedChange={(checked) => {
+                                                        const permIds = group.permissions.map((p) => String(p.id));
+                                                        if (checked) {
+                                                            setAssignedPermissionIds((prev) => {
+                                                                const next = new Set([...prev, ...permIds]);
+                                                                return Array.from(next);
+                                                            });
+                                                        } else {
+                                                            setAssignedPermissionIds((prev) => prev.filter((id) => !permIds.includes(id)));
+                                                        }
+                                                    }}
                                                 />
                                             </div>
 
@@ -244,10 +282,11 @@ export default function PermissionSettings() {
                                                         variant="outline"
                                                         className="mx-2 bg-background font-normal"
                                                     >
-                                                        Đã chọn 3/
+                                                        Đã chọn {
+                                                            group.permissions.filter((p) => assignedPermissionIds.includes(String(p.id))).length
+                                                        }/
                                                         {
-                                                            group.permissions
-                                                                .length
+                                                            group.permissions.length
                                                         }
                                                     </Badge>
                                                 </div>
@@ -265,7 +304,14 @@ export default function PermissionSettings() {
                                                         >
                                                             <Checkbox
                                                                 id={`${group.group}-${perm.id}`}
-                                                                className=""
+                                                                checked={assignedPermissionIds.includes(String(perm.id))}
+                                                                onCheckedChange={(checked) => {
+                                                                    if (checked) {
+                                                                        setAssignedPermissionIds((prev) => [...prev, String(perm.id)]);
+                                                                    } else {
+                                                                        setAssignedPermissionIds((prev) => prev.filter((id) => id !== String(perm.id)));
+                                                                    }
+                                                                }}
                                                             />
                                                             <label
                                                                 htmlFor={`${group.group}-${perm.id}`}
@@ -294,7 +340,7 @@ export default function PermissionSettings() {
                     ref={footerRef}
                     className="px-6 py-3 border-t bg-card text-[11px] text-muted-foreground flex justify-end"
                 >
-                    <Button className="gap-2 px-4">
+                    <Button className="gap-2 px-4" onClick={handleSavePermissions} disabled={isSaving}>
                         <Save className="h-4 w-4" /> {t("Save")}
                     </Button>
                 </div>
