@@ -3,7 +3,7 @@ import api from "@/lib/axios";
 import type {
     RolesResponse,
     PermissionResponse,
-    RoleItemResponse,
+    RoleDetailResponse,
 } from "@/types/role-permission";
 
 const permissionService = {
@@ -13,7 +13,7 @@ const permissionService = {
     },
 
     getRoleDetail: async (id: number) => {
-        const res = await api.get<RoleItemResponse>(
+        const res = await api.get<RoleDetailResponse>(
             API.URL_API_API_V1 + `/roles/${id}`,
         );
         return res.data;
@@ -26,7 +26,7 @@ const permissionService = {
         return res.data;
     },
 
-    givePermission: async (roleId: number, permissions: any[]) => {
+    givePermission: async (roleId: number, permissions: {}) => {
         const res = await api.put(
             API.URL_API_API_V1 + `/roles/${roleId}/give-permissions`,
             permissions,

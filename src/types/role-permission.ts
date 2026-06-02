@@ -11,8 +11,12 @@ export type RolesResponse = {
 export type RoleItemResponse = {
     id: number;
     name: string;
-    permission_ids: string[];
+    permission_ids: number[];
     permissions: string[];
+};
+
+export type RoleDetailResponse = {
+    data: RoleItemResponse;
 };
 
 export type PermissionItem = {

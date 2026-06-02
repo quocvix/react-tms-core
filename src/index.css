@@ -229,20 +229,3 @@
 .antd-tms-table .ant-table {
     font-size: 0.875rem !important;
 }
-
-/* .antd-tms-table .ant-pagination {
-    font-size: 0.875rem !important;
-    padding: 12px 0 !important;
-    margin: 0 !important;
-} */
-
-/* Đồng bộ màu đường kẻ (Border) của Antd Table theo Shadcn */
-/* .antd-tms-table .ant-table-container {
-    border-inline-start: 1px solid hsl(var(--border)) !important;
-    border-top: 1px solid hsl(var(--border)) !important;
-}
-.antd-tms-table .ant-table-thead > tr > th,
-.antd-tms-table .ant-table-tbody > tr > td {
-    border-bottom: 1px solid hsl(var(--border)) !important;
-    border-inline-end: 1px solid hsl(var(--border)) !important;
-} */
