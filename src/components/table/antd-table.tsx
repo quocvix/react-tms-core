@@ -15,14 +15,35 @@ import { t } from "i18next";
 import { Plus, Settings2 } from "lucide-react";
 import { Button } from "../ui/button";
 import FileTypeExcel from "@/assets/icon/svg/file-type-excel";
-import TablePagination from "../pagination/pagination";
+import TablePagination, { type PaginationMeta } from "../pagination/pagination";
 
 // Kế thừa lại toàn bộ Props chuẩn của Antd Table để dùng đầy đủ logic
-interface AntdTableProps<T> extends TableProps<T> {}
+interface AntdTableProps<T> extends TableProps<T> {
+    hideActionTable?: boolean;
+    hideLeftAction?: boolean;
+    hideRightAction?: boolean;
+    hideFooterTable?: boolean;
+    hideLeftFooter?: boolean;
+    hideRightFooter?: boolean;
+    paginationMeta?: PaginationMeta;
+    onPageChange?: (page: number) => void;
+    pageSize?: number;
+    onPageSizeChange?: (size: number) => void;
+}
 
 export function AntdTable<T extends object>({
     columns,
     dataSource,
+    hideActionTable,
+    hideLeftAction,
+    hideRightAction,
+    hideFooterTable,
+    hideLeftFooter,
+    hideRightFooter,
+    paginationMeta,
+    onPageChange,
+    pageSize,
+    onPageSizeChange,
     ...props
 }: AntdTableProps<T>) {
     const { isDark } = useThemeStore();
@@ -65,34 +86,55 @@ export function AntdTable<T extends object>({
             }}
         >
             <Card className="table-box p-2">
-                <div className="action-table flex w-full justify-between mt-1">
-                    <div className="left-action flex items-center space-x-2">
-                        <Select defaultValue="10">
-                            <SelectTrigger className="w-full max-w-35">
-                                <Label>{t("Show")}:</Label>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectItem value="10">10</SelectItem>
-                                    <SelectItem value="20">20</SelectItem>
-                                    <SelectItem value="50">50</SelectItem>
-                                    <SelectItem value="100">100</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                {!hideActionTable && (
+                    <div className="action-table flex w-full justify-between mt-1">
+                        {!hideLeftAction ? (
+                            <div className="left-action flex items-center space-x-2">
+                                <Select
+                                    value={pageSize?.toString() ?? "20"}
+                                    onValueChange={(val) =>
+                                        onPageSizeChange?.(Number(val))
+                                    }
+                                >
+                                    <SelectTrigger className="w-full max-w-35">
+                                        <Label>{t("Show")}:</Label>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value="20">
+                                                20
+                                            </SelectItem>
+                                            <SelectItem value="30">
+                                                30
+                                            </SelectItem>
+                                            <SelectItem value="40">
+                                                40
+                                            </SelectItem>
+                                            <SelectItem value="100">
+                                                100
+                                            </SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        ) : (
+                            <div />
+                        )}
+                        {!hideRightAction && (
+                            <div className="right-action flex items-center justify-end space-x-3">
+                                <Button variant="outline">
+                                    <Plus />
+                                    {t("Add")}
+                                </Button>
+                                <Button variant="outline">
+                                    <Settings2 />
+                                    {t("Actions")}
+                                </Button>
+                            </div>
+                        )}
                     </div>
-                    <div className="right-action flex items-center justify-end space-x-3">
-                        <Button variant="outline">
-                            <Plus />
-                            {t("Add")}
-                        </Button>
-                        <Button variant="outline">
-                            <Settings2 />
-                            {t("Actions")}
-                        </Button>
-                    </div>
-                </div>
+                )}
 
                 <Table
                     columns={columns}
@@ -102,17 +144,30 @@ export function AntdTable<T extends object>({
                     {...props}
                     pagination={false}
                 />
-                <div className="footer-table flex w-full justify-between">
-                    <div className="left-footer flex items-center space-x-2">
-                        <Button variant="outline">
-                            <FileTypeExcel />
-                            {t("Export")}
-                        </Button>
+                {!hideFooterTable && (
+                    <div className="footer-table flex w-full justify-between mt-1">
+                        {!hideLeftFooter ? (
+                            <div className="left-footer flex items-center space-x-2">
+                                <Button variant="outline">
+                                    <FileTypeExcel />
+                                    {t("Export")}
+                                </Button>
+                            </div>
+                        ) : (
+                            <div />
+                        )}
+                        {!hideRightFooter ? (
+                            <div className="right-footer flex items-center justify-end space-x-2">
+                                <TablePagination
+                                    meta={paginationMeta}
+                                    onPageChange={onPageChange}
+                                />
+                            </div>
+                        ) : (
+                            <div />
+                        )}
                     </div>
-                    <div className="right-footer flex items-center justify-end space-x-2">
-                        <TablePagination />
-                    </div>
-                </div>
+                )}
             </Card>
         </ConfigProvider>
     );
