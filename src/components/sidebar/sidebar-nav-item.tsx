@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronRight, type LucideIcon } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useMatches } from "react-router-dom";
 
 import {
     SidebarMenuButton,
@@ -37,10 +37,12 @@ import { cn } from "@/lib/utils";
 
 type SidebarItemBase = {
     title: string;
+    id?: string;
 };
 
 export type SidebarLinkItem = SidebarItemBase & {
     url: string;
+    activeUrls?: string[];
     children?: never;
 };
 
@@ -70,12 +72,14 @@ type SidebarTreeNodeProps = {
     pathname: string;
     nodeKey: string;
     depth?: number;
+    activeSidebarId?: string;
 };
 
 type SidebarFlyoutProps = {
     items: SidebarItem[];
     pathname: string;
     parentKey: string;
+    activeSidebarId?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -95,14 +99,26 @@ const isLinkItem = (
 // ---------------------------------------------------------------------------
 
 /**
- * Kiểm tra xem `url` có đang active dựa trên `pathname` hiện tại không.
+ * Kiểm tra xem `url` có đang active dựa trên `pathname` hoặc `activeSidebarId` hiện tại không.
  *
  * Lưu ý: Root "/" chỉ active khi exact match để tránh match với mọi route.
  * Các route khác dùng prefix match: /projects active khi pathname = /projects/active
  */
-const isCurrentPath = (pathname: string, url: string) => {
-    if (url === "/") return pathname === url;
-    return pathname === url || pathname.startsWith(`${url}/`);
+const isCurrentItem = (
+    pathname: string,
+    item: SidebarLinkItem | SidebarRootLinkItem,
+    activeSidebarId?: string,
+) => {
+    if (item.id && activeSidebarId && item.id === activeSidebarId) return true;
+    
+    if (item.url === "/") return pathname === item.url;
+    if (pathname === item.url || pathname.startsWith(`${item.url}/`)) return true;
+    if (item.activeUrls) {
+        return item.activeUrls.some(
+            (path) => pathname === path || pathname.startsWith(`${path}/`),
+        );
+    }
+    return false;
 };
 
 /**
@@ -112,12 +128,13 @@ const isCurrentPath = (pathname: string, url: string) => {
 const hasCurrentChild = (
     pathname: string,
     item: SidebarItem | SidebarRootItem,
+    activeSidebarId?: string,
 ): boolean => {
     if (isLinkItem(item)) {
-        return isCurrentPath(pathname, item.url);
+        return isCurrentItem(pathname, item, activeSidebarId);
     }
 
-    return item.children.some((child) => hasCurrentChild(pathname, child));
+    return item.children.some((child) => hasCurrentChild(pathname, child, activeSidebarId));
 };
 
 /**
@@ -222,12 +239,14 @@ const SidebarTreeLeaf = ({
     item,
     depth = 0,
     pathname,
+    activeSidebarId,
 }: {
     item: SidebarLinkItem;
     depth?: number;
     pathname: string;
+    activeSidebarId?: string;
 }) => {
-    const active = isCurrentPath(pathname, item.url);
+    const active = isCurrentItem(pathname, item, activeSidebarId);
 
     return (
         <SidebarMenuSubItem>
@@ -257,8 +276,9 @@ const SidebarTreeGroup = ({
     pathname,
     nodeKey,
     depth = 0,
+    activeSidebarId,
 }: SidebarTreeNodeProps & { item: SidebarGroupItem }) => {
-    const active = hasCurrentChild(pathname, item);
+    const active = hasCurrentChild(pathname, item, activeSidebarId);
     const [open, setOpen] = useState(active);
 
     useEffect(() => {
@@ -291,6 +311,7 @@ const SidebarTreeGroup = ({
                                 pathname={pathname}
                                 nodeKey={childKey}
                                 depth={depth + 1}
+                                activeSidebarId={activeSidebarId}
                             />
                         );
                     })}
@@ -309,6 +330,7 @@ const SidebarTreeNode = ({
     pathname,
     nodeKey,
     depth = 0,
+    activeSidebarId,
 }: SidebarTreeNodeProps) => {
     if (isLinkItem(item)) {
         return (
@@ -316,6 +338,7 @@ const SidebarTreeNode = ({
                 item={item}
                 pathname={pathname}
                 depth={depth}
+                activeSidebarId={activeSidebarId}
             />
         );
     }
@@ -326,6 +349,7 @@ const SidebarTreeNode = ({
             pathname={pathname}
             nodeKey={nodeKey}
             depth={depth}
+            activeSidebarId={activeSidebarId}
         />
     );
 };
@@ -337,7 +361,7 @@ const SidebarTreeNode = ({
 // Active state được tính trực tiếp trong render, không dùng state.
 // ---------------------------------------------------------------------------
 
-const SidebarFlyout = ({ items, pathname, parentKey }: SidebarFlyoutProps) => {
+const SidebarFlyout = ({ items, pathname, parentKey, activeSidebarId }: SidebarFlyoutProps) => {
     return (
         <div className="min-w-56 rounded-lg border bg-popover p-1 text-popover-foreground shadow-md">
             {items.map((item, index) => {
@@ -347,7 +371,7 @@ const SidebarFlyout = ({ items, pathname, parentKey }: SidebarFlyoutProps) => {
                 );
 
                 if (isLinkItem(item)) {
-                    const active = isCurrentPath(pathname, item.url);
+                    const active = isCurrentItem(pathname, item, activeSidebarId);
 
                     return (
                         <Link
@@ -365,7 +389,7 @@ const SidebarFlyout = ({ items, pathname, parentKey }: SidebarFlyoutProps) => {
                 }
 
                 // Group item trong flyout: dùng HoverCard lồng nhau để hiện submenu
-                const active = hasCurrentChild(pathname, item);
+                const active = hasCurrentChild(pathname, item, activeSidebarId);
 
                 return (
                     <HoverCard key={itemKey} openDelay={60} closeDelay={120}>
@@ -394,6 +418,7 @@ const SidebarFlyout = ({ items, pathname, parentKey }: SidebarFlyoutProps) => {
                                 items={item.children}
                                 pathname={pathname}
                                 parentKey={itemKey}
+                                activeSidebarId={activeSidebarId}
                             />
                         </HoverCardContent>
                     </HoverCard>
@@ -416,14 +441,22 @@ const SidebarFlyout = ({ items, pathname, parentKey }: SidebarFlyoutProps) => {
 export function SidebarNavItem({ item }: SidebarNavItemProps) {
     const { pathname } = useLocation();
     const { isMobile, state } = useSidebar();
+    
+    const matches = useMatches();
+    const matchWithSidebar = matches.reverse().find(
+        // @ts-expect-error - Route handle typing
+        (match) => match.handle?.activeSidebar
+    );
+    // @ts-expect-error - Route handle typing
+    const activeSidebarId = matchWithSidebar?.handle?.activeSidebar;
 
     // Sidebar collapsed chỉ tính trên desktop; mobile luôn dùng expanded layout
     const collapsed = state === "collapsed" && !isMobile;
 
     // active = true nếu item này (hoặc bất kỳ child nào) khớp với route hiện tại
     const active = isLinkItem(item)
-        ? isCurrentPath(pathname, item.url)
-        : hasCurrentChild(pathname, item);
+        ? isCurrentItem(pathname, item, activeSidebarId)
+        : hasCurrentChild(pathname, item, activeSidebarId);
 
     // --- LINK ITEM ---
     if (isLinkItem(item)) {
@@ -505,6 +538,7 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
                             items={item.children}
                             pathname={pathname}
                             parentKey={item.title}
+                            activeSidebarId={activeSidebarId}
                         />
                     </HoverCardContent>
                 </HoverCard>
@@ -545,6 +579,7 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
                                 item={child}
                                 pathname={pathname}
                                 nodeKey={childKey}
+                                activeSidebarId={activeSidebarId}
                             />
                         );
                     })}

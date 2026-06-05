@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import Layout from "@/pages/Layout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -19,6 +19,11 @@ const UserPage = lazy(() => import("@/pages/user/UserPage"));
 // admin pages
 const PermissionPage = lazy(
     () => import("@/pages/admin/permission/RolePermission"),
+);
+
+const UserList = lazy(() => import("@/pages/admin/user-management/UserList"));
+const CreateUser = lazy(
+    () => import("@/pages/admin/user-management/CreateUser"),
 );
 
 // not found page
@@ -118,6 +123,32 @@ export const router = createBrowserRouter([
                                         <PermissionPage />
                                     </S>
                                 ),
+                            },
+                            {
+                                path: "user-management",
+                                handle: { activeSidebar: "user-management" },
+                                children: [
+                                    {
+                                        index: true,
+                                        element: <Navigate to="list" replace />,
+                                    },
+                                    {
+                                        path: "list",
+                                        element: (
+                                            <S>
+                                                <UserList />
+                                            </S>
+                                        ),
+                                    },
+                                    {
+                                        path: "create",
+                                        element: (
+                                            <S>
+                                                <CreateUser />
+                                            </S>
+                                        ),
+                                    },
+                                ],
                             },
                         ],
                     },

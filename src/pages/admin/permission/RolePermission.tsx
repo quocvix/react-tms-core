@@ -22,6 +22,7 @@ import {
     useRef,
     useSyncExternalStore,
 } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import permissionService from "@/services/permissionService";
 import type {
@@ -439,14 +440,8 @@ RoleDialog.displayName = "RoleDialog";
 // ─── Main Component ─────────────────────────────────────────────────
 
 export default function PermissionSettings() {
-    const [rolesList, setRolesList] = useState<RoleItem[]>([]);
-    const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+    const queryClient = useQueryClient();
     const [activeRoleId, setActiveRoleId] = useState<string>("");
-    const [permissionGroupsList, setPermissionGroupsList] = useState<
-        PermissionGroup[]
-    >([]);
-    const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
 
     const [dialogState, setDialogState] = useState<RoleDialogState>({
@@ -455,7 +450,6 @@ export default function PermissionSettings() {
     });
 
     const [deletingRole, setDeletingRole] = useState<RoleItem | null>(null);
-    const [isDeleting, setIsDeleting] = useState(false);
 
     // Stable store instance
     const storeRef = useRef<PermissionStore | null>(null);
@@ -464,8 +458,49 @@ export default function PermissionSettings() {
     }
     const store = storeRef.current;
 
+    // ─── Data fetching via TanStack Query ────────────────────────────
+
+    const { data: rolesList = [], isLoading: isLoadingRoles } = useQuery({
+        queryKey: ["roles"],
+        queryFn: () =>
+            permissionService.getRoles().then((res) => res.data || []),
+    });
+
+    // Auto-select first role when list loads
+    useEffect(() => {
+        if (rolesList.length > 0 && !activeRoleId) {
+            setActiveRoleId(String(rolesList[0].id));
+        }
+    }, [rolesList, activeRoleId]);
+
     const activeRole =
         rolesList.find((r) => String(r.id) === activeRoleId) || rolesList[0];
+
+    const { data: permissionGroupsList = [], isLoading: isLoadingPermissions } =
+        useQuery({
+            queryKey: ["permissions", activeRoleId],
+            queryFn: () =>
+                permissionService
+                    .getPermission(`?role_id=${activeRoleId}`)
+                    .then((res) => res.data || []),
+            enabled: !!activeRoleId,
+        });
+
+    const { data: roleDetail } = useQuery({
+        queryKey: ["roleDetail", activeRoleId],
+        queryFn: () =>
+            permissionService
+                .getRoleDetail(Number(activeRoleId))
+                .then((res) => res.data),
+        enabled: !!activeRoleId,
+    });
+
+    // Sync role detail → external permission store
+    useEffect(() => {
+        if (roleDetail?.permission_ids) {
+            store.reset(new Set(roleDetail.permission_ids));
+        }
+    }, [roleDetail, store]);
 
     // Auto-open all groups when permission list changes
     useEffect(() => {
@@ -550,126 +585,79 @@ export default function PermissionSettings() {
         overscan: 5,
     });
 
-    // ─── Data fetching ──────────────────────────────────────────────
-    const fetchRoles = useCallback(async () => {
-        setIsLoadingRoles(true);
-        try {
-            const res = await permissionService.getRoles();
-            const fetchedRoles = res.data || [];
-            setRolesList(fetchedRoles);
-            if (fetchedRoles.length > 0) {
-                setActiveRoleId(String(fetchedRoles[0].id));
-            }
-        } catch (error) {
-            console.error("Failed to fetch roles:", error);
-        } finally {
-            setIsLoadingRoles(false);
-        }
-    }, []);
+    // ─── Mutations ──────────────────────────────────────────────────
 
-    const fetchRoleDetail = useCallback(
-        async (roleId: number) => {
-            if (!roleId) return;
-            try {
-                const res = await permissionService.getRoleDetail(roleId);
-                const ids = new Set(res.data.permission_ids || []);
-                store.reset(ids);
-            } catch (error) {
-                console.error("Failed to fetch role detail:", error);
-            }
-        },
-        [store],
-    );
-
-    const fetchPermissions = useCallback(
-        async (roleId: string) => {
-            if (!roleId) return;
-            setIsLoadingPermissions(true);
-            try {
-                const res = await permissionService.getPermission(
-                    `?role_id=${roleId}`,
-                );
-                setPermissionGroupsList(res.data || []);
-                await fetchRoleDetail(Number(roleId));
-            } catch (error) {
-                console.error("Failed to fetch permissions:", error);
-            } finally {
-                setIsLoadingPermissions(false);
-            }
-        },
-        [fetchRoleDetail],
-    );
-
-    useEffect(() => {
-        fetchRoles();
-    }, [fetchRoles]);
-
-    useEffect(() => {
-        if (activeRoleId) {
-            fetchPermissions(activeRoleId);
-        }
-    }, [activeRoleId, fetchPermissions]);
-
-    const handleSavePermissions = useCallback(async () => {
-        if (!activeRoleId) return;
-        setIsSaving(true);
-        try {
-            await permissionService.givePermission(Number(activeRoleId), {
+    const savePermissionsMutation = useMutation({
+        mutationFn: () =>
+            permissionService.givePermission(Number(activeRoleId), {
                 permission_ids: Array.from(store.getSnapshot()),
-            });
+            }),
+        onSuccess: () => {
             toast.success(t("Save permissions successfully"));
-        } catch (error) {
-            console.error("Failed to save permissions:", error);
+            queryClient.invalidateQueries({
+                queryKey: ["roleDetail", activeRoleId],
+            });
+        },
+        onError: () => {
             toast.error(t("Failed to save permissions"));
-        } finally {
-            setIsSaving(false);
-        }
-    }, [activeRoleId, store]);
+        },
+    });
+
+    const handleSavePermissions = useCallback(() => {
+        if (!activeRoleId) return;
+        savePermissionsMutation.mutate();
+    }, [activeRoleId, savePermissionsMutation]);
+
+    const saveRoleMutation = useMutation({
+        mutationFn: async (name: string) => {
+            if (dialogState.mode === "add") {
+                await permissionService.createRole({ name });
+                toast.success(t("Tạo nhóm quyền thành công"));
+            } else if (dialogState.mode === "edit" && dialogState.role) {
+                await permissionService.updateRole(dialogState.role.id, {
+                    name,
+                });
+                toast.success(t("Cập nhật nhóm quyền thành công"));
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["roles"] });
+        },
+        onError: () => {
+            toast.error(
+                dialogState.mode === "add"
+                    ? t("Tạo nhóm quyền thất bại")
+                    : t("Cập nhật nhóm quyền thất bại"),
+            );
+        },
+    });
 
     const handleSaveRole = useCallback(
         async (name: string) => {
-            try {
-                if (dialogState.mode === "add") {
-                    await permissionService.createRole({ name });
-                    toast.success(t("Tạo nhóm quyền thành công"));
-                } else if (dialogState.mode === "edit" && dialogState.role) {
-                    await permissionService.updateRole(dialogState.role.id, {
-                        name,
-                    });
-                    toast.success(t("Cập nhật nhóm quyền thành công"));
-                }
-                fetchRoles();
-            } catch (error) {
-                console.error("Failed to save role:", error);
-                toast.error(
-                    dialogState.mode === "add"
-                        ? t("Tạo nhóm quyền thất bại")
-                        : t("Cập nhật nhóm quyền thất bại"),
-                );
-                throw error; // Ném lỗi để RoleDialog không đóng popup
-            }
+            await saveRoleMutation.mutateAsync(name);
         },
-        [dialogState, fetchRoles, t],
+        [saveRoleMutation],
     );
 
-    const handleDeleteRole = useCallback(async () => {
-        if (!deletingRole) return;
-        setIsDeleting(true);
-        try {
-            await permissionService.deleteRole(deletingRole.id);
+    const deleteRoleMutation = useMutation({
+        mutationFn: (roleId: number) => permissionService.deleteRole(roleId),
+        onSuccess: (_data, deletedRoleId) => {
             toast.success(t("Xoá nhóm quyền thành công"));
-            if (activeRoleId === String(deletingRole.id)) {
+            if (activeRoleId === String(deletedRoleId)) {
                 setActiveRoleId("");
             }
             setDeletingRole(null);
-            fetchRoles();
-        } catch (error) {
-            console.error("Failed to delete role:", error);
+            queryClient.invalidateQueries({ queryKey: ["roles"] });
+        },
+        onError: () => {
             toast.error(t("Xoá nhóm quyền thất bại"));
-        } finally {
-            setIsDeleting(false);
-        }
-    }, [deletingRole, activeRoleId, fetchRoles, t]);
+        },
+    });
+
+    const handleDeleteRole = useCallback(() => {
+        if (!deletingRole) return;
+        deleteRoleMutation.mutate(deletingRole.id);
+    }, [deletingRole, deleteRoleMutation]);
 
     return (
         <Tabs
@@ -884,7 +872,7 @@ export default function PermissionSettings() {
                     <Button
                         className="gap-2 px-4"
                         onClick={handleSavePermissions}
-                        disabled={isSaving}
+                        disabled={savePermissionsMutation.isPending}
                     >
                         <Save className="h-4 w-4" /> {t("Save")}
                     </Button>
@@ -906,7 +894,7 @@ export default function PermissionSettings() {
             <AlertDialog
                 open={!!deletingRole}
                 onOpenChange={(open) => {
-                    if (!open && !isDeleting) setDeletingRole(null);
+                    if (!open && !deleteRoleMutation.isPending) setDeletingRole(null);
                 }}
             >
                 <AlertDialogContent size="sm">
@@ -921,7 +909,7 @@ export default function PermissionSettings() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isDeleting}>
+                        <AlertDialogCancel disabled={deleteRoleMutation.isPending}>
                             {t("Huỷ")}
                         </AlertDialogCancel>
                         <AlertDialogAction
@@ -930,9 +918,9 @@ export default function PermissionSettings() {
                                 handleDeleteRole();
                             }}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            disabled={isDeleting}
+                            disabled={deleteRoleMutation.isPending}
                         >
-                            {isDeleting ? <LoadingSpinner /> : null}
+                            {deleteRoleMutation.isPending ? <LoadingSpinner /> : null}
                             {t("Xoá")}
                         </AlertDialogAction>
                     </AlertDialogFooter>

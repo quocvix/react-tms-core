@@ -1,6 +1,21 @@
 import { Table, ConfigProvider, theme } from "antd";
 import type { TableProps } from "antd";
 import { useThemeStore } from "@/stores/useThemeStore";
+import { Card } from "../ui/card";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "../ui/select";
+import { Label } from "../ui/label";
+import { t } from "i18next";
+import { Plus, Settings2 } from "lucide-react";
+import { Button } from "../ui/button";
+import FileTypeExcel from "@/assets/icon/svg/file-type-excel";
+import TablePagination from "../pagination/pagination";
 
 // Kế thừa lại toàn bộ Props chuẩn của Antd Table để dùng đầy đủ logic
 interface AntdTableProps<T> extends TableProps<T> {}
@@ -49,13 +64,56 @@ export function AntdTable<T extends object>({
                 },
             }}
         >
-            <Table
-                columns={columns}
-                dataSource={dataSource}
-                // Thêm class để tiện tinh chỉnh CSS nếu có xung đột nhỏ với Tailwind
-                className="antd-table border border-border rounded-md"
-                {...props}
-            />
+            <Card className="table-box p-2">
+                <div className="action-table flex w-full justify-between mt-1">
+                    <div className="left-action flex items-center space-x-2">
+                        <Select defaultValue="10">
+                            <SelectTrigger className="w-full max-w-35">
+                                <Label>{t("Show")}:</Label>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    <SelectItem value="10">10</SelectItem>
+                                    <SelectItem value="20">20</SelectItem>
+                                    <SelectItem value="50">50</SelectItem>
+                                    <SelectItem value="100">100</SelectItem>
+                                </SelectGroup>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="right-action flex items-center justify-end space-x-3">
+                        <Button variant="outline">
+                            <Plus />
+                            {t("Add")}
+                        </Button>
+                        <Button variant="outline">
+                            <Settings2 />
+                            {t("Actions")}
+                        </Button>
+                    </div>
+                </div>
+
+                <Table
+                    columns={columns}
+                    dataSource={dataSource}
+                    // Thêm class để tiện tinh chỉnh CSS nếu có xung đột nhỏ với Tailwind
+                    className="antd-table border border-border border-x-0"
+                    {...props}
+                    pagination={false}
+                />
+                <div className="footer-table flex w-full justify-between">
+                    <div className="left-footer flex items-center space-x-2">
+                        <Button variant="outline">
+                            <FileTypeExcel />
+                            {t("Export")}
+                        </Button>
+                    </div>
+                    <div className="right-footer flex items-center justify-end space-x-2">
+                        <TablePagination />
+                    </div>
+                </div>
+            </Card>
         </ConfigProvider>
     );
 }
