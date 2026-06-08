@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { AntdTable } from "@/components/table/antd-table";
+import { AntdTable, TableSlot } from "@/components/table/antd-table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import userService, { type UserListItem } from "@/services/userService";
 import { t } from "i18next";
-import { RotateCcw, Search } from "lucide-react";
+import { RotateCcw, Search, Plus, Settings2, Eye } from "lucide-react";
 
 export default function UserListPage() {
     // ─── Search state ───────────────────────────────────────────────────────
@@ -30,6 +30,7 @@ export default function UserListPage() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    const [isCollapseSearch, setIsCollapseSearch] = useState(false);
 
     // ─── React Query ────────────────────────────────────────────────────────
     const { data, isLoading } = useQuery({
@@ -192,7 +193,11 @@ export default function UserListPage() {
     return (
         <div className="space-y-4">
             {/* Search Box */}
-            <Card className="search-box grid grid-cols-6 gap-4 p-4">
+            <Card
+                className={`search-box grid gap-4 p-4 transition-all duration-300 overflow-hidden ${
+                    isCollapseSearch ? "hidden" : "grid-cols-6"
+                }`}
+            >
                 <div className="flex flex-col">
                     <Label>{t("Email")}</Label>
                     <Input
@@ -284,7 +289,6 @@ export default function UserListPage() {
                 dataSource={users}
                 loading={isLoading}
                 rowKey="id"
-                scroll={{ x: "max-content", y: 80 * 5 }}
                 hideLeftFooter={true}
                 paginationMeta={data?.meta?.pagination}
                 onPageChange={(p) => setPage(p)}
@@ -294,7 +298,21 @@ export default function UserListPage() {
                     setPage(1);
                 }}
                 rowSelection={rowSelection}
-            />
+                showSearchToggle={true}
+                isSearchCollapsed={isCollapseSearch}
+                onSearchCollapseChange={setIsCollapseSearch}
+            >
+                <TableSlot name="rightAction">
+                    <Button variant="outline">
+                        <Plus className="" />
+                        {t("Add")}
+                    </Button>
+                    <Button variant="outline">
+                        <Settings2 className="" />
+                        {t("Action")}
+                    </Button>
+                </TableSlot>
+            </AntdTable>
         </div>
     );
 }
