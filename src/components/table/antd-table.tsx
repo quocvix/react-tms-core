@@ -68,15 +68,16 @@ export function AntdTable<T extends object>({
             const footerHeight = hideFooterTable ? 0 : 50; // Chiều cao vùng footer-table (chứa export, pagination)
             // 16px là padding bottom của div chứa UserList mà bạn yêu cầu trừ đi
             // 16px nữa là padding dư dả cho Card hoặc khoảng cách an toàn
-            const bottomOffset = 16 + 16 + footerHeight; 
-            
-            const availableHeight = window.innerHeight - rect.top - headerHeight - bottomOffset;
+            const bottomOffset = 10 + 16 + footerHeight;
+
+            const availableHeight =
+                window.innerHeight - rect.top - headerHeight - bottomOffset;
             setTableScrollY(Math.max(200, availableHeight)); // Đảm bảo min height là 200px
         };
 
         updateHeight();
         window.addEventListener("resize", updateHeight);
-        
+
         const observer = new ResizeObserver(() => {
             updateHeight();
         });
@@ -218,7 +219,11 @@ export function AntdTable<T extends object>({
                         // Thêm class để tiện tinh chỉnh CSS nếu có xung đột nhỏ với Tailwind
                         className="antd-table border border-border border-x-0"
                         {...props}
-                        scroll={{ x: "max-content", ...(props.scroll || {}), y: tableScrollY }}
+                        scroll={{
+                            x: "max-content",
+                            ...(props.scroll || {}),
+                            y: tableScrollY,
+                        }}
                         pagination={false}
                     />
                 </div>
