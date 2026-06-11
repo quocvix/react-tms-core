@@ -61,7 +61,7 @@ export function SelectSearchBox({
                         className,
                     )}
                 >
-                    <div className="flex items-center truncate">
+                    <div className="flex items-center truncate text-foreground">
                         {selectedOption ? (
                             <>
                                 {selectedOption.icon && (
@@ -101,10 +101,10 @@ export function SelectSearchBox({
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                className="w-[var(--radix-popover-trigger-width)] p-0"
+                className="w-(--radix-popover-trigger-width) p-0"
                 align="start"
             >
-                <Command>
+                <Command className="**:data-[slot=input-group]:bg-transparent">
                     <CommandInput placeholder={t("Search...")} />
                     <CommandList>
                         <CommandEmpty>{t("No data available")}</CommandEmpty>
@@ -117,6 +117,8 @@ export function SelectSearchBox({
                                         onChange(option.value);
                                         setOpen(false);
                                     }}
+                                    data-checked={value === option.value}
+                                    className="data-selected:bg-accent data-selected:text-accent-foreground"
                                 >
                                     {option.icon && (
                                         <option.icon className="mr-2 h-4 w-4 text-muted-foreground shrink-0" />
@@ -124,14 +126,6 @@ export function SelectSearchBox({
                                     <span className="truncate">
                                         {t(option.label)}
                                     </span>
-                                    <Check
-                                        className={cn(
-                                            "ml-auto h-4 w-4 shrink-0",
-                                            value === option.value
-                                                ? "opacity-100"
-                                                : "opacity-0",
-                                        )}
-                                    />
                                 </CommandItem>
                             ))}
                         </CommandGroup>
