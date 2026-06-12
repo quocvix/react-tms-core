@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { AntdTable, TableSlot } from "@/components/table/antd-table";
@@ -16,10 +17,90 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import UserSearchBox, {
-    defaultSearchParams,
-    type UserSearchParams,
-} from "./UserSearchBox";
+import { type ComboOption } from "@/components/select-box/select-box";
+import {
+    DynamicSearchBox,
+    type SearchFieldConfig,
+} from "@/components/search-box/dynamic-search-box";
+import { STATUS, GENDER } from "@/lib/constants";
+import permissionService from "@/services/permissionService";
+
+// ─── Search Defaults ─────────────────────────────────────────────────────────
+const defaultSearchParams = {
+    email: "",
+    user_name: "",
+    first_name: "",
+    last_name: "",
+    gender: "",
+    contact_phone: "",
+    contact_email: "",
+    status: "",
+    role_id: "",
+    created_at: "",
+};
+
+type UserSearchParams = typeof defaultSearchParams;
+
+// ─── Dropdown Options (tĩnh) ────────────────────────────────────────────────
+const statusOptions: ComboOption[] = [
+    { label: t("All"), value: "" },
+    ...Object.entries(STATUS).map(([key, value]) => ({
+        label: value,
+        value: key,
+    })),
+];
+
+const genderOptions: ComboOption[] = [
+    { label: t("All"), value: "" },
+    ...Object.entries(GENDER).map(([key, value]) => ({
+        label: value,
+        value: key,
+    })),
+];
+
+// ─── Search Fields Config ────────────────────────────────────────────────────
+const userSearchFields: SearchFieldConfig[] = [
+    { name: "email", label: t("Email"), type: "text" },
+    { name: "user_name", label: t("Username"), type: "text" },
+    {
+        name: "status",
+        label: t("Status"),
+        type: "select",
+        options: statusOptions,
+        placeholder: t("All"),
+    },
+    { name: "first_name", label: t("First Name"), type: "text" },
+    { name: "last_name", label: t("Last Name"), type: "text" },
+    {
+        name: "role_id",
+        label: t("Role"),
+        type: "select-search",
+        placeholder: t("All"),
+        clearable: true,
+        fetchOptions: async () => {
+            const res = await permissionService.getRoles();
+            if (res?.data) {
+                return [
+                    { label: t("All"), value: "" },
+                    ...res.data.map((role) => ({
+                        label: role.name,
+                        value: String(role.id),
+                    })),
+                ];
+            }
+            return [{ label: t("All"), value: "" }];
+        },
+    },
+    {
+        name: "gender",
+        label: t("Gender"),
+        type: "select",
+        options: genderOptions,
+        placeholder: t("All"),
+    },
+    { name: "contact_phone", label: t("Contact Phone"), type: "text" },
+    { name: "contact_email", label: t("Contact Email"), type: "text" },
+];
 
 // ─── Column Renderers ───────────────────────────────────────────────────────
 // Định nghĩa các hàm render riêng theo key của cột.
@@ -71,6 +152,8 @@ const columnRenderers: Record<string, (...args: unknown[]) => React.ReactNode> =
     };
 
 export default function UserListPage() {
+    const navigate = useNavigate();
+
     // ─── Search state (chỉ lưu submitted params cho API) ────────────────────
     const [submittedParams, setSubmittedParams] =
         useState<UserSearchParams>(defaultSearchParams);
@@ -133,11 +216,13 @@ export default function UserListPage() {
 
     return (
         <div className="space-y-4">
-            {/* Search Box — component riêng, gõ phím không re-render Table */}
-            <UserSearchBox
-                isCollapsed={isCollapseSearch}
+            {/* Search Box — DynamicSearchBox với react-hook-form, zero re-render */}
+            <DynamicSearchBox<UserSearchParams>
+                fields={userSearchFields}
+                defaultValues={defaultSearchParams}
                 onSearch={handleSearch}
                 onReset={handleReset}
+                isCollapsed={isCollapseSearch}
             />
 
             {/* Table */}
@@ -160,7 +245,7 @@ export default function UserListPage() {
                 onSearchCollapseChange={setIsCollapseSearch}
             >
                 <TableSlot name="rightAction">
-                    <Button>
+                    <Button onClick={() => navigate("/admin/user-management/create")}>
                         <Plus className="" />
                         {t("Add")}
                     </Button>

@@ -43,7 +43,7 @@ export function SelectBox({
             filter={() => true}
         >
             <ComboboxInput
-                placeholder={placeholder}
+                placeholder={t(placeholder)}
                 className={cn(
                     "w-full [&_input]:cursor-pointer [&_input]:select-none [&_input]:caret-transparent",
                     className,
