@@ -10,7 +10,17 @@ const ProtectedRoute = () => {
     const token = localStorage.getItem("access-token");
     const [starting, setStarting] = useState(true);
 
+    // ─── Boneyard bypass (chỉ hoạt động ở DEV mode) ────────────────────────
+    const isBoneyardBuild =
+        import.meta.env.DEV &&
+        new URLSearchParams(window.location.search).has("boneyard");
+
     const init = async () => {
+        if (isBoneyardBuild) {
+            setStarting(false);
+            return;
+        }
+
         if (!token) {
             // await refresh();
         }
@@ -40,7 +50,7 @@ const ProtectedRoute = () => {
         );
     }
 
-    if (!token) {
+    if (!isBoneyardBuild && !token) {
         return <Navigate to="/login" replace />;
     }
 
