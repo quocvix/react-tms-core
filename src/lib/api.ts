@@ -17,5 +17,4 @@ const API = {
     formatDatetimeView: "DD/MM/YYYY HH:mm:ss",
     formatDatetime: "YYYY/MM/DD HH:mm:ss",
 };
-
 export default API;

@@ -1,3 +1,4 @@
+import React, { type ReactNode, useEffect, useRef, useState } from "react";
 import { Table, ConfigProvider, theme } from "antd";
 import type { TableProps } from "antd";
 import { useThemeStore } from "@/stores/useThemeStore";
@@ -12,16 +13,17 @@ import {
 } from "../ui/select";
 import { Label } from "../ui/label";
 import { t } from "i18next";
-import { Plus, Settings2 } from "lucide-react";
 import { Button } from "../ui/button";
 import FileTypeExcel from "@/assets/icon/svg/file-type-excel";
 import TablePagination, { type PaginationMeta } from "../pagination/pagination";
+import { Eye, EyeOff } from "lucide-react";
 
 // Kế thừa lại toàn bộ Props chuẩn của Antd Table để dùng đầy đủ logic
 interface AntdTableProps<T> extends TableProps<T> {
     hideActionTable?: boolean;
     hideLeftAction?: boolean;
     hideRightAction?: boolean;
+    children?: ReactNode;
     hideFooterTable?: boolean;
     hideLeftFooter?: boolean;
     hideRightFooter?: boolean;
@@ -29,6 +31,9 @@ interface AntdTableProps<T> extends TableProps<T> {
     onPageChange?: (page: number) => void;
     pageSize?: number;
     onPageSizeChange?: (size: number) => void;
+    showSearchToggle?: boolean;
+    isSearchCollapsed?: boolean;
+    onSearchCollapseChange?: (collapsed: boolean) => void;
 }
 
 export function AntdTable<T extends object>({
@@ -37,6 +42,7 @@ export function AntdTable<T extends object>({
     hideActionTable,
     hideLeftAction,
     hideRightAction,
+    children,
     hideFooterTable,
     hideLeftFooter,
     hideRightFooter,
@@ -44,9 +50,66 @@ export function AntdTable<T extends object>({
     onPageChange,
     pageSize,
     onPageSizeChange,
+    showSearchToggle,
+    isSearchCollapsed,
+    onSearchCollapseChange,
     ...props
 }: AntdTableProps<T>) {
     const { isDark } = useThemeStore();
+
+    const tableWrapperRef = useRef<HTMLDivElement>(null);
+    const [tableScrollY, setTableScrollY] = useState<number | string>(400);
+
+    useEffect(() => {
+        const updateHeight = () => {
+            if (!tableWrapperRef.current) return;
+            const rect = tableWrapperRef.current.getBoundingClientRect();
+            const headerHeight = 55; // Chiều cao dự trù của thead
+            const footerHeight = hideFooterTable ? 0 : 50; // Chiều cao vùng footer-table (chứa export, pagination)
+            // 16px là padding bottom của div chứa UserList mà bạn yêu cầu trừ đi
+            // 16px nữa là padding dư dả cho Card hoặc khoảng cách an toàn
+            const bottomOffset = 10 + 16 + footerHeight;
+
+            const availableHeight =
+                window.innerHeight - rect.top - headerHeight - bottomOffset;
+            setTableScrollY(Math.max(200, availableHeight)); // Đảm bảo min height là 200px
+        };
+
+        updateHeight();
+        window.addEventListener("resize", updateHeight);
+
+        const observer = new ResizeObserver(() => {
+            updateHeight();
+        });
+        observer.observe(document.body);
+
+        return () => {
+            window.removeEventListener("resize", updateHeight);
+            observer.disconnect();
+        };
+    }, [hideFooterTable]);
+
+    // ─── Named Slots ─────────────────────────────────────────────────────
+    // Duyệt qua tất cả children được truyền vào giữa cặp thẻ <AntdTable>...</AntdTable>
+    // Chỉ nhận những children là <TableSlot>, các phần tử khác sẽ bị bỏ qua.
+    // Mỗi <TableSlot name="xxx"> sẽ được gán vào slots["xxx"] để render đúng vị trí.
+    //
+    // Cách sử dụng:
+    //   <AntdTable>
+    //     <TableSlot name="leftAction">  → render ở vùng left-action (bên cạnh Select)
+    //     <TableSlot name="rightAction"> → render ở vùng right-action (góc phải)
+    //   </AntdTable>
+    // ─────────────────────────────────────────────────────────────────────
+    const slots: Record<string, ReactNode> = {};
+    React.Children.forEach(children, (child) => {
+        if (
+            React.isValidElement<{ name: string }>(child) &&
+            child.type === TableSlot
+        ) {
+            slots[child.props.name] = child;
+        }
+    });
+
     return (
         <ConfigProvider
             theme={{
@@ -117,33 +180,53 @@ export function AntdTable<T extends object>({
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
+                                {showSearchToggle && (
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() =>
+                                            onSearchCollapseChange?.(
+                                                !isSearchCollapsed,
+                                            )
+                                        }
+                                    >
+                                        {isSearchCollapsed ? (
+                                            <EyeOff className="w-4 h-4 mr-2" />
+                                        ) : (
+                                            <Eye className="w-4 h-4 mr-2" />
+                                        )}
+                                        {isSearchCollapsed
+                                            ? t("Show Search")
+                                            : t("Hide Search")}
+                                    </Button>
+                                )}
+                                {slots.leftAction}
                             </div>
                         ) : (
                             <div />
                         )}
                         {!hideRightAction && (
                             <div className="right-action flex items-center justify-end space-x-3">
-                                <Button variant="outline">
-                                    <Plus />
-                                    {t("Add")}
-                                </Button>
-                                <Button variant="outline">
-                                    <Settings2 />
-                                    {t("Actions")}
-                                </Button>
+                                {slots.rightAction}
                             </div>
                         )}
                     </div>
                 )}
 
-                <Table
-                    columns={columns}
-                    dataSource={dataSource}
-                    // Thêm class để tiện tinh chỉnh CSS nếu có xung đột nhỏ với Tailwind
-                    className="antd-table border border-border border-x-0"
-                    {...props}
-                    pagination={false}
-                />
+                <div ref={tableWrapperRef} className="w-full">
+                    <Table
+                        columns={columns}
+                        dataSource={dataSource}
+                        // Thêm class để tiện tinh chỉnh CSS nếu có xung đột nhỏ với Tailwind
+                        className="antd-table border border-border border-x-0"
+                        {...props}
+                        scroll={{
+                            x: "max-content",
+                            ...(props.scroll || {}),
+                            y: tableScrollY,
+                        }}
+                        pagination={false}
+                    />
+                </div>
                 {!hideFooterTable && (
                     <div className="footer-table flex w-full justify-between mt-1">
                         {!hideLeftFooter ? (
@@ -171,4 +254,8 @@ export function AntdTable<T extends object>({
             </Card>
         </ConfigProvider>
     );
+}
+
+export function TableSlot({ children }: { name: string; children: ReactNode }) {
+    return <>{children}</>;
 }

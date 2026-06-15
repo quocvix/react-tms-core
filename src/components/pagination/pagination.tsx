@@ -73,10 +73,10 @@ const TablePagination = ({ meta, onPageChange }: TablePaginationProps) => {
         <div className="flex w-full flex-wrap items-center justify-between gap-6 max-sm:justify-center">
             <div className="text-muted-foreground flex grow items-center justify-end whitespace-nowrap max-sm:justify-center">
                 <p
-                    className="text-muted-foreground text-sm whitespace-nowrap"
+                    className="text-muted-foreground text-sm font-semibold whitespace-nowrap"
                     aria-live="polite"
                 >
-                    <span className="text-foreground">{endItem}</span> /{" "}
+                    <span className="text-foreground">{endItem}</span>/
                     <span className="text-foreground">{total}</span>
                 </p>
             </div>
