@@ -15,8 +15,5 @@
     "shimmerAngle": 110,
     "stagger": 80,
     "transition": 300,
-    "resolveEnvVars": true,
-    "routes": [
-        "/admin/translation/"
-    ]
+    "resolveEnvVars": true
 }

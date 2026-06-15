@@ -11,10 +11,19 @@ const ProtectedRoute = () => {
     const isBoneyard = navigator.userAgent.includes("HeadlessChrome");
     const [starting, setStarting] = useState(true);
 
+    // ─── Boneyard bypass (chỉ hoạt động ở DEV mode) ────────────────────────
+    const isBoneyardBuild =
+        import.meta.env.DEV &&
+        new URLSearchParams(window.location.search).has("boneyard");
+
     const init = async () => {
-        if (isBoneyard) {
-            setStarting(false)
-            return
+        if (isBoneyardBuild) {
+            setStarting(false);
+            return;
+        }
+
+        if (!token) {
+            // await refresh();
         }
 
         if (token && !hasCheckedToken && !isFetching) {
@@ -50,7 +59,7 @@ const ProtectedRoute = () => {
         );
     }
 
-    if (!token && !isBoneyard) {
+    if (!isBoneyardBuild && !token) {
         return <Navigate to="/login" replace />;
     }
 
