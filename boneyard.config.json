@@ -1,21 +1,22 @@
 {
-  "breakpoints": [375, 768, 1280],
-  "out": "./src/bones",
-  "wait": 800,
-
-  "color": "#e5e5e5",
-  "darkColor": "#2a2a2a",
-  "animate": "shimmer",
-  "shimmerColor": "#ebebeb",
-  "darkShimmerColor": "#333333",
-  "speed": "2s",
-  "shimmerAngle": 110,
-  "stagger": 80,
-  "transition": 300,
-
-  "resolveEnvVars": true,
-  "auth": {
-    "cookies": [{ "name": "session", "value": "env[SESSION_TOKEN]", "url" : "http://localhost:5173/" }],
-    "headers": { "Authorization": "Bearer env[API_TOKEN]" }
-  }
+    "breakpoints": [
+        375,
+        768,
+        1280
+    ],
+    "out": "./src/bones",
+    "wait": 800,
+    "color": "#e5e5e5",
+    "darkColor": "#2a2a2a",
+    "animate": "shimmer",
+    "shimmerColor": "#ebebeb",
+    "darkShimmerColor": "#333333",
+    "speed": "2s",
+    "shimmerAngle": 110,
+    "stagger": 80,
+    "transition": 300,
+    "resolveEnvVars": true,
+    "routes": [
+        "/admin/translation/"
+    ]
 }
