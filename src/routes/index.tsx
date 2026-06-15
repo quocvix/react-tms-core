@@ -25,6 +25,9 @@ const UserList = lazy(() => import("@/pages/admin/user-management/UserList"));
 const CreateUser = lazy(
     () => import("@/pages/admin/user-management/CreateUser"),
 );
+const LanguageManagement = lazy(
+    () => import("@/pages/admin/translation/Translation"),
+);
 
 // not found page
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
@@ -121,6 +124,14 @@ export const router = createBrowserRouter([
                                 element: (
                                     <S>
                                         <PermissionPage />
+                                    </S>
+                                ),
+                            },
+                            {
+                                path: "translation",
+                                element: (
+                                    <S>
+                                        <LanguageManagement />
                                     </S>
                                 ),
                             },

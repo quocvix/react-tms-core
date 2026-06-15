@@ -79,6 +79,7 @@ export const getSidebarMenu = (t: TFunction): SidebarRootItem[] => [
                 id: "user-management",
             },
             { title: t("Role & Permission"), url: "/admin/permission" },
+            { title: t("Translation"), url: "/admin/translation" },
             { title: t("Audit Logs"), url: "/admin/audit-logs" },
         ],
     },

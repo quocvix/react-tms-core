@@ -1,5 +1,5 @@
 import i18n from "@/lib/i18n";
-import languageService from "@/services/languageService";
+import languageService from "@/services/translationService";
 import type { LanguageState } from "@/types/store";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
