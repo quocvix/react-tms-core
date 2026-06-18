@@ -25,6 +25,9 @@ const UserList = lazy(() => import("@/pages/admin/user-management/UserList"));
 const CreateUser = lazy(
     () => import("@/pages/admin/user-management/CreateUser"),
 );
+const UpdateUser = lazy(
+    () => import("@/pages/admin/user-management/UpdateUser"),
+);
 const LanguageManagement = lazy(
     () => import("@/pages/admin/translation/Translation"),
 );
@@ -117,7 +120,7 @@ export const router = createBrowserRouter([
                         ],
                     },
                     {
-                        path: "admin",
+                        path: "administration",
                         children: [
                             {
                                 path: "permission",
@@ -156,6 +159,14 @@ export const router = createBrowserRouter([
                                         element: (
                                             <S>
                                                 <CreateUser />
+                                            </S>
+                                        ),
+                                    },
+                                    {
+                                        path: "update/:id",
+                                        element: (
+                                            <S>
+                                                <UpdateUser />
                                             </S>
                                         ),
                                     },

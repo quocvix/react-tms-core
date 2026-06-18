@@ -6,6 +6,8 @@ export interface HubItem {
     name: string;
     code: string;
     warehouse_code: string;
+    address?: string;
+    location?: string;
 }
 
 export interface UserInHubsResponse {
@@ -27,6 +29,11 @@ const hubService = {
                 hub_id: hub_id,
             },
         );
+        return res.data;
+    },
+
+    getAllHub: async () => {
+        const res = await api.get(API.URL_MASTER_DATA_V1 + "/gonsa/hub");
         return res.data;
     },
 };

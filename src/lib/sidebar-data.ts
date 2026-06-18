@@ -75,12 +75,21 @@ export const getSidebarMenu = (t: TFunction): SidebarRootItem[] => [
         children: [
             {
                 title: t("User Management"),
-                url: "/admin/user-management/list",
+                url: "/administration/user-management/list",
                 id: "user-management",
             },
-            { title: t("Role & Permission"), url: "/admin/permission" },
-            { title: t("Translation"), url: "/admin/translation" },
-            { title: t("Audit Logs"), url: "/admin/audit-logs" },
+            {
+                title: t("Role & Permission"),
+                url: "/administration/permission",
+            },
+            {
+                title: t("Translation"),
+                url: "/administration/translation",
+            },
+            {
+                title: t("Audit Logs"),
+                url: "/administration/audit-logs",
+            },
         ],
     },
     {

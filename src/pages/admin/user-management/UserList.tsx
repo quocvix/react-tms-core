@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { Skeleton } from "boneyard-js/react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -216,67 +215,75 @@ export default function UserListPage() {
     const columns = useTableColumns("user_management", columnsWithRender);
 
     return (
-        <Skeleton name="user-list" loading={isLoading}>
-            <div className="space-y-4">
-                {/* Search Box — DynamicSearchBox với react-hook-form, zero re-render */}
-                <DynamicSearchBox<UserSearchParams>
-                    fields={userSearchFields}
-                    defaultValues={defaultSearchParams}
-                    onSearch={handleSearch}
-                    onReset={handleReset}
-                    isCollapsed={isCollapseSearch}
-                />
+        <div className="space-y-4">
+            {/* Search Box — DynamicSearchBox với react-hook-form, zero re-render */}
+            <DynamicSearchBox<UserSearchParams>
+                fields={userSearchFields}
+                defaultValues={defaultSearchParams}
+                onSearch={handleSearch}
+                onReset={handleReset}
+                isCollapsed={isCollapseSearch}
+            />
 
-                {/* Table */}
-                <AntdTable
-                    columns={columns}
-                    dataSource={users}
-                    loading={isLoading}
-                    rowKey="id"
-                    hideLeftFooter={true}
-                    paginationMeta={data?.meta?.pagination}
-                    onPageChange={(p) => setPage(p)}
-                    pageSize={limit}
-                    onPageSizeChange={(size) => {
-                        setLimit(size);
-                        setPage(1);
-                    }}
-                    rowSelection={rowSelection}
-                    showSearchToggle={true}
-                    isSearchCollapsed={isCollapseSearch}
-                    onSearchCollapseChange={setIsCollapseSearch}
-                >
-                    <TableSlot name="rightAction">
-                        <Button
-                            onClick={() =>
-                                navigate("/admin/user-management/create")
-                            }
-                        >
-                            <Plus className="" />
-                            {t("Add")}
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline">
-                                    <Settings2 className="" />
-                                    {t("Action")}
-                                    <ChevronDown className="" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                    <Pencil className="" />
-                                    <span>{t("Edit", "Sửa")}</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-100 dark:focus:bg-red-900">
-                                    <Trash className="" />
-                                    <span>{t("Delete", "Xóa")}</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </TableSlot>
-                </AntdTable>
-            </div>
-        </Skeleton>
+            {/* Table */}
+            <AntdTable
+                columns={columns}
+                dataSource={users}
+                loading={isLoading}
+                skeletonName="user-list"
+                rowKey="id"
+                hideLeftFooter={true}
+                paginationMeta={data?.meta?.pagination}
+                onPageChange={(p) => setPage(p)}
+                pageSize={limit}
+                onPageSizeChange={(size) => {
+                    setLimit(size);
+                    setPage(1);
+                }}
+                rowSelection={rowSelection}
+                showSearchToggle={true}
+                isSearchCollapsed={isCollapseSearch}
+                onSearchCollapseChange={setIsCollapseSearch}
+            >
+                <TableSlot name="rightAction">
+                    <Button
+                        onClick={() =>
+                            navigate("/administration/user-management/create")
+                        }
+                    >
+                        <Plus className="" />
+                        {t("Add")}
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <Settings2 className="" />
+                                {t("Action")}
+                                <ChevronDown className="" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                                disabled={selectedRowKeys.length !== 1}
+                                onClick={() => {
+                                    if (selectedRowKeys.length === 1) {
+                                        navigate(
+                                            `/administration/user-management/update/${selectedRowKeys[0]}`,
+                                        );
+                                    }
+                                }}
+                            >
+                                <Pencil className="" />
+                                <span>{t("Edit", "Sửa")}</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-100 dark:focus:bg-red-900">
+                                <Trash className="" />
+                                <span>{t("Delete", "Xóa")}</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </TableSlot>
+            </AntdTable>
+        </div>
     );
 }

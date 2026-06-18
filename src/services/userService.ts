@@ -75,6 +75,30 @@ const userService = {
         });
         return res.data;
     },
+
+    /**
+     * Tạo người dùng mới
+     */
+    createUser: async (payload: any) => {
+        const res = await api.post("api/api/v1/users", payload);
+        return res.data;
+    },
+
+    /**
+     * Lấy chi tiết người dùng theo ID
+     */
+    getUserById: async (id: string) => {
+        const res = await api.get(`api/api/v1/users/${id}`);
+        return res.data;
+    },
+
+    /**
+     * Cập nhật thông tin người dùng
+     */
+    updateUser: async (id: string, payload: any) => {
+        const res = await api.put(`api/api/v1/users/${id}`, payload);
+        return res.data;
+    },
 };
 
 export default userService;

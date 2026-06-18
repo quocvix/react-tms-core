@@ -14,7 +14,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -22,6 +22,8 @@ import {
     type ComboOption,
 } from "@/components/select-box/select-box";
 
+import { useQuery } from "@tanstack/react-query";
+import userService from "@/services/userService";
 import type { RoleItem } from "@/types/role-permission";
 import type { HubItem } from "@/services/hubService";
 
@@ -38,62 +40,49 @@ const statusOptions: ComboOption[] = [
     { label: "Không Hoạt Động", value: "IN" },
 ];
 
-const formSchema = z
-    .object({
-        email: z
-            .string()
-            .min(1, "Vui lòng nhập Email")
-            .email("Email không hợp lệ"),
-        password: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
-        confirm_password: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
-        name: z.string().min(1, "Vui lòng nhập tên đăng nhập"),
-        profile: z.object({
-            full_name: z.string().optional(),
-            first_name: z.string().min(1, "Vui lòng nhập tên"),
-            last_name: z.string().min(1, "Vui lòng nhập họ"),
-            gender: z.string(),
-            contact_phone: z.string().optional(),
-            contact_email: z.string().optional(),
-            code: z.string().optional(),
-            location: z.string().optional(),
-        }),
-        role_list: z.array(z.any()).optional(),
-        role_ids: z.array(z.number()).optional(),
-        status: z.string(),
-        hub_ids: z.array(z.number()).optional(),
-        hub_list: z.array(z.any()).optional(),
-    })
-    .refine((data) => data.password === data.confirm_password, {
-        message: "Mật khẩu xác nhận không khớp",
-        path: ["confirm_password"],
-    });
+const formSchema = z.object({
+    email: z
+        .string()
+        .min(1, "Vui lòng nhập Email")
+        .email("Email không hợp lệ"),
+    name: z.string().min(1, "Vui lòng nhập tên đăng nhập"),
+    profile: z.object({
+        full_name: z.string().optional(),
+        first_name: z.string().min(1, "Vui lòng nhập tên"),
+        last_name: z.string().min(1, "Vui lòng nhập họ"),
+        gender: z.string(),
+        contact_phone: z.string().optional(),
+        contact_email: z.string().optional(),
+        code: z.string().optional(),
+        location: z.string().optional(),
+    }),
+    role_list: z.array(z.any()).optional(),
+    role_ids: z.array(z.number()).optional(),
+    status: z.string(),
+    hub_ids: z.array(z.number()).optional(),
+    hub_list: z.array(z.any()).optional(),
+});
 
 type FormValues = z.infer<typeof formSchema>;
 
-const CreateUser = () => {
+const UpdateUser = () => {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("vai-tro");
     const [addedRoles, setAddedRoles] = useState<RoleItem[]>([]);
     const [addedHubs, setAddedHubs] = useState<HubItem[]>([]);
 
-    React.useEffect(() => {
-        if (addedRoles.length === 0 && activeTab === "kho") {
-            setActiveTab("vai-tro");
-        }
-    }, [addedRoles.length, activeTab]);
-
     const {
         register,
         handleSubmit,
         control,
+        reset,
         formState: { errors },
     } = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
-            password: "",
-            confirm_password: "",
             name: "",
             profile: {
                 full_name: "",
@@ -113,6 +102,61 @@ const CreateUser = () => {
         },
     });
 
+    // Fetch user data and populate the form
+    const { isLoading } = useQuery({
+        queryKey: ["user", id],
+        queryFn: () => userService.getUserById(id!),
+        enabled: !!id,
+        refetchOnWindowFocus: false,
+        select: (res: any) => res?.data,
+        placeholderData: undefined,
+        // @ts-ignore — onSuccess deprecated in v5 but still works; alternative is useEffect
+    });
+
+    // Populate form when user data arrives
+    React.useEffect(() => {
+        if (!id) return;
+        userService.getUserById(id).then((res: any) => {
+            const user = res?.data;
+            if (!user) return;
+
+            reset({
+                email: user.email ?? "",
+                name: user.user_name ?? user.name ?? "",
+                profile: {
+                    full_name: user.full_name ?? "",
+                    first_name: user.first_name ?? "",
+                    last_name: user.last_name ?? "",
+                    gender: user.gender ?? "MALE",
+                    contact_phone: user.contact_phone ?? "",
+                    contact_email: user.contact_email ?? "",
+                    code: user.code ?? "",
+                    location: user.location ?? "",
+                },
+                role_list: user.role_list ?? [],
+                role_ids: user.role_ids ?? [],
+                status: user.status ?? "AC",
+                hub_ids: user.hub_ids ?? [],
+                hub_list: user.hub_list ?? [],
+            });
+
+            // Populate role and hub lists for tabs
+            if (user.role_list?.length) {
+                setAddedRoles(user.role_list);
+            }
+            if (user.hub_list?.length) {
+                setAddedHubs(user.hub_list);
+            }
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
+
+    React.useEffect(() => {
+        if (addedRoles.length === 0 && activeTab === "kho") {
+            setActiveTab("vai-tro");
+        }
+    }, [addedRoles.length, activeTab]);
+
     const onSubmit = (data: FormValues) => {
         setIsConfirmOpen(true);
     };
@@ -121,6 +165,16 @@ const CreateUser = () => {
         setIsConfirmOpen(false);
         navigate("/admin/user-management/list");
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-12">
+                <div className="text-muted-foreground">
+                    Đang tải thông tin...
+                </div>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -137,31 +191,6 @@ const CreateUser = () => {
                             aria-invalid={!!errors.email}
                         />
                         <FieldError>{errors.email?.message}</FieldError>
-                    </Field>
-                    <Field className="flex flex-col gap-2">
-                        <Label>
-                            Mật Khẩu <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                            type="password"
-                            {...register("password")}
-                            aria-invalid={!!errors.password}
-                        />
-                        <FieldError>{errors.password?.message}</FieldError>
-                    </Field>
-                    <Field className="flex flex-col gap-2">
-                        <Label>
-                            Xác Nhận Mật Khẩu
-                            <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                            type="password"
-                            {...register("confirm_password")}
-                            aria-invalid={!!errors.confirm_password}
-                        />
-                        <FieldError>
-                            {errors.confirm_password?.message}
-                        </FieldError>
                     </Field>
                     <Field className="flex flex-col gap-2">
                         <Label>Giới Tính</Label>
@@ -278,7 +307,7 @@ const CreateUser = () => {
                 <Tabs
                     value={activeTab}
                     onValueChange={setActiveTab}
-                    className="w-full relative"
+                    className="w-full"
                 >
                     <div className="flex justify-between items-center mb-4">
                         <TabsList className="w-fit border bg-background p-1 gap-1 shadow-sm">
@@ -327,8 +356,8 @@ const CreateUser = () => {
                                     Hủy thao tác
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Bạn có chắc chắn muốn hủy quá trình tạo
-                                    người dùng? Các thông tin đã nhập sẽ không
+                                    Bạn có chắc chắn muốn hủy quá trình cập nhật
+                                    người dùng? Các thông tin đã sửa sẽ không
                                     được lưu.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -355,7 +384,8 @@ const CreateUser = () => {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Lưu thông tin</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Bạn có chắc chắn muốn tạo người dùng này không?
+                            Bạn có chắc chắn muốn cập nhật người dùng này
+                            không?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -373,4 +403,4 @@ const CreateUser = () => {
     );
 };
 
-export default CreateUser;
+export default UpdateUser;
