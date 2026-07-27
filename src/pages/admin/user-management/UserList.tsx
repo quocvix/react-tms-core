@@ -102,57 +102,74 @@ const userSearchFields: SearchFieldConfig[] = [
     { name: "contact_email", label: t("Contact Email"), type: "text" },
 ];
 
-// ─── Column Renderers ───────────────────────────────────────────────────────
-// Định nghĩa các hàm render riêng theo key của cột.
-// Chỉ các cột cần tuỳ chỉnh hiển thị mới cần khai báo ở đây.
-const columnRenderers: Record<string, (...args: unknown[]) => React.ReactNode> =
-    {
-        image_url: (image_url: unknown, record: unknown) => {
-            const url = image_url as string | null;
-            const r = record as UserListItem;
-            return (
-                <Avatar className="h-8 w-8">
-                    <AvatarImage src={url ?? undefined} />
-                    <AvatarFallback className="text-xs">
-                        {(r.first_name?.[0] ?? "").toUpperCase()}
-                        {(r.last_name?.[0] ?? "").toUpperCase()}
-                    </AvatarFallback>
-                </Avatar>
-            );
-        },
-        status_name: (status_name: unknown, record: unknown) => {
-            const r = record as UserListItem;
-            const isActive = r.status === "AC";
-            return (
-                <Badge
-                    variant="outline"
-                    className={
-                        isActive
-                            ? "bg-green-500/10 text-green-500"
-                            : "bg-red-500/10 text-red-500"
-                    }
-                >
-                    {t(status_name as string)}
-                </Badge>
-            );
-        },
-        role: (roles: unknown) => (
-            <div className="flex flex-wrap gap-1">
-                {(roles as string[]).map((role) => (
-                    <Badge key={role} variant="secondary" className="text-xs">
-                        {role}
-                    </Badge>
-                ))}
-            </div>
-        ),
-        gender: (gender: unknown) =>
-            (gender as string) === "MALE" ? t("Male") : t("Female"),
-        created_at: (date: unknown) =>
-            dayjs(date as string).format("DD/MM/YYYY HH:mm"),
-    };
-
 export default function UserListPage() {
     const navigate = useNavigate();
+
+    // ─── Column Renderers ───────────────────────────────────────────────────────
+    const columnRenderers = useMemo<
+        Record<string, (...args: unknown[]) => React.ReactNode>
+    >(
+        () => ({
+            email: (email: unknown, record: unknown) => {
+                const r = record as UserListItem;
+                return (
+                    <span
+                        className="text-blue-600 font-medium hover:underline cursor-pointer"
+                        onClick={() =>
+                            navigate(
+                                `/administration/user-management/view/${r.id}`,
+                            )
+                        }
+                    >
+                        {email as string}
+                    </span>
+                );
+            },
+            image_url: (image_url: unknown, record: unknown) => {
+                const url = image_url as string | null;
+                const r = record as UserListItem;
+                return (
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={url ?? undefined} />
+                        <AvatarFallback className="text-xs">
+                            {(r.first_name?.[0] ?? "").toUpperCase()}
+                            {(r.last_name?.[0] ?? "").toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                );
+            },
+            status_name: (status_name: unknown, record: unknown) => {
+                const r = record as UserListItem;
+                const isActive = r.status === "AC";
+                return (
+                    <Badge
+                        variant="outline"
+                        className={
+                            isActive
+                                ? "bg-green-500/10 text-green-500"
+                                : "bg-red-500/10 text-red-500"
+                        }
+                    >
+                        {t(status_name as string)}
+                    </Badge>
+                );
+            },
+            role: (roles: unknown) => (
+                <div className="flex flex-wrap gap-1">
+                    {(roles as string[]).map((role) => (
+                        <Badge key={role} variant="secondary" className="text-xs">
+                            {role}
+                        </Badge>
+                    ))}
+                </div>
+            ),
+            gender: (gender: unknown) =>
+                (gender as string) === "MALE" ? t("Male") : t("Female"),
+            created_at: (date: unknown) =>
+                dayjs(date as string).format("DD/MM/YYYY HH:mm"),
+        }),
+        [navigate],
+    );
 
     // ─── Search state (chỉ lưu submitted params cho API) ────────────────────
     const [submittedParams, setSubmittedParams] =
@@ -210,7 +227,7 @@ export default function UserListPage() {
                     ? { render: columnRenderers[col.key] }
                     : {}),
             })),
-        [baseColumns],
+        [baseColumns, columnRenderers],
     );
     const columns = useTableColumns("user_management", columnsWithRender);
 
@@ -274,11 +291,11 @@ export default function UserListPage() {
                                 }}
                             >
                                 <Pencil className="" />
-                                <span>{t("Edit", "Sửa")}</span>
+                                <span>{t("Edit")}</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-100 dark:focus:bg-red-900">
                                 <Trash className="" />
-                                <span>{t("Delete", "Xóa")}</span>
+                                <span>{t("Delete")}</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

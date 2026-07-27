@@ -21,6 +21,7 @@ export interface SelectBoxProps {
     onChange: (value: string) => void;
     placeholder?: string;
     className?: string;
+    disabled?: boolean;
 }
 
 export function SelectBox({
@@ -29,6 +30,7 @@ export function SelectBox({
     onChange,
     placeholder = "Select...",
     className,
+    disabled = false,
 }: SelectBoxProps) {
     const getLabel = (val: string) => {
         return options.find((o) => o.value === val)?.label ?? val;
@@ -41,6 +43,7 @@ export function SelectBox({
             itemToStringLabel={getLabel}
             items={options}
             filter={() => true}
+            disabled={disabled}
         >
             <ComboboxInput
                 placeholder={t(placeholder)}

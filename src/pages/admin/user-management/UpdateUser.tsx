@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,32 +24,34 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import userService from "@/services/userService";
+import permissionService from "@/services/permissionService";
+import hubService, { type HubItem } from "@/services/hubService";
 import type { RoleItem } from "@/types/role-permission";
-import type { HubItem } from "@/services/hubService";
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Field, FieldError } from "@/components/ui/field";
+import { t } from "i18next";
 
 import { RoleSelectionTab } from "./components/RoleSelectionTab";
 import { HubSelectionTab } from "./components/HubSelectionTab";
 
 const statusOptions: ComboOption[] = [
-    { label: "Hoạt Động", value: "AC" },
-    { label: "Không Hoạt Động", value: "IN" },
+    { label: t("Active", "Hoạt Động"), value: "AC" },
+    { label: t("Inactive", "Không Hoạt Động"), value: "IN" },
 ];
 
 const formSchema = z.object({
     email: z
         .string()
-        .min(1, "Vui lòng nhập Email")
-        .email("Email không hợp lệ"),
-    name: z.string().min(1, "Vui lòng nhập tên đăng nhập"),
+        .min(1, t("Please enter Email", "Vui lòng nhập Email"))
+        .email(t("Invalid Email", "Email không hợp lệ")),
+    name: z.string().min(1, t("Please enter username", "Vui lòng nhập tên đăng nhập")),
     profile: z.object({
         full_name: z.string().optional(),
-        first_name: z.string().min(1, "Vui lòng nhập tên"),
-        last_name: z.string().min(1, "Vui lòng nhập họ"),
+        first_name: z.string().min(1, t("Please enter first name", "Vui lòng nhập tên")),
+        last_name: z.string().min(1, t("Please enter last name", "Vui lòng nhập họ")),
         gender: z.string(),
         contact_phone: z.string().optional(),
         contact_email: z.string().optional(),
@@ -65,13 +67,21 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const UpdateUser = () => {
+export interface UpdateUserProps {
+    mode?: "edit" | "view";
+}
+
+const UpdateUser: React.FC<UpdateUserProps> = ({ mode = "edit" }) => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
+    const isReadOnly = mode === "view";
+
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("vai-tro");
     const [addedRoles, setAddedRoles] = useState<RoleItem[]>([]);
     const [addedHubs, setAddedHubs] = useState<HubItem[]>([]);
+    const [isRolesMapped, setIsRolesMapped] = useState(false);
+    const [isHubsMapped, setIsHubsMapped] = useState(false);
 
     const {
         register,
@@ -102,75 +112,122 @@ const UpdateUser = () => {
         },
     });
 
-    // Fetch user data and populate the form
-    const { isLoading } = useQuery({
+    // Fetch user data via useQuery
+    const { data: user, isLoading } = useQuery({
         queryKey: ["user", id],
         queryFn: () => userService.getUserById(id!),
         enabled: !!id,
         refetchOnWindowFocus: false,
         select: (res: any) => res?.data,
-        placeholderData: undefined,
-        // @ts-ignore — onSuccess deprecated in v5 but still works; alternative is useEffect
     });
 
+    // Fetch roles & hubs for mapping role_ids & hub_ids
+    const { data: rolesResponse } = useQuery({
+        queryKey: ["roles"],
+        queryFn: () => permissionService.getRoles(),
+    });
+
+    const { data: hubsResponse } = useQuery({
+        queryKey: ["hubs"],
+        queryFn: () => hubService.getAllHub(),
+    });
+
+    const roles = useMemo(
+        () => rolesResponse?.data || [],
+        [rolesResponse],
+    );
+
+    const hubs = useMemo(
+        () => hubsResponse?.data?.data || hubsResponse?.data || [],
+        [hubsResponse],
+    );
+
     // Populate form when user data arrives
-    React.useEffect(() => {
-        if (!id) return;
-        userService.getUserById(id).then((res: any) => {
-            const user = res?.data;
-            if (!user) return;
+    useEffect(() => {
+        if (!user) return;
 
-            reset({
-                email: user.email ?? "",
-                name: user.user_name ?? user.name ?? "",
-                profile: {
-                    full_name: user.full_name ?? "",
-                    first_name: user.first_name ?? "",
-                    last_name: user.last_name ?? "",
-                    gender: user.gender ?? "MALE",
-                    contact_phone: user.contact_phone ?? "",
-                    contact_email: user.contact_email ?? "",
-                    code: user.code ?? "",
-                    location: user.location ?? "",
-                },
-                role_list: user.role_list ?? [],
-                role_ids: user.role_ids ?? [],
-                status: user.status ?? "AC",
-                hub_ids: user.hub_ids ?? [],
-                hub_list: user.hub_list ?? [],
-            });
-
-            // Populate role and hub lists for tabs
-            if (user.role_list?.length) {
-                setAddedRoles(user.role_list);
-            }
-            if (user.hub_list?.length) {
-                setAddedHubs(user.hub_list);
-            }
+        reset({
+            email: user.email ?? "",
+            name: user.user_name ?? user.name ?? "",
+            profile: {
+                full_name: user.full_name ?? "",
+                first_name: user.first_name ?? "",
+                last_name: user.last_name ?? "",
+                gender: user.gender ?? "MALE",
+                contact_phone: user.contact_phone ?? "",
+                contact_email: user.contact_email ?? "",
+                code: user.code ?? "",
+                location: user.location ?? "",
+            },
+            role_list: user.role_list ?? [],
+            role_ids: user.role_ids ?? [],
+            status: user.status ?? "AC",
+            hub_ids: user.hub_ids ?? [],
+            hub_list: user.hub_list ?? [],
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
+    }, [user, reset]);
 
-    React.useEffect(() => {
+    // Map user.role_ids -> addedRoles
+    useEffect(() => {
+        if (!user || isRolesMapped) return;
+
+        if (user.role_list?.length) {
+            setAddedRoles(user.role_list);
+            setIsRolesMapped(true);
+        } else if (user.role_ids?.length) {
+            if (roles.length > 0) {
+                const mappedRoles = roles.filter((r: RoleItem) =>
+                    user.role_ids.includes(r.id),
+                );
+                setAddedRoles(mappedRoles);
+                setIsRolesMapped(true);
+            }
+        } else {
+            setIsRolesMapped(true);
+        }
+    }, [user, roles, isRolesMapped]);
+
+    // Map user.hub_ids -> addedHubs
+    useEffect(() => {
+        if (!user || isHubsMapped) return;
+
+        if (user.hub_list?.length) {
+            setAddedHubs(user.hub_list);
+            setIsHubsMapped(true);
+        } else if (user.hub_ids?.length) {
+            if (hubs.length > 0) {
+                const mappedHubs = hubs.filter((h: HubItem) =>
+                    user.hub_ids.includes(h.id),
+                );
+                setAddedHubs(mappedHubs);
+                setIsHubsMapped(true);
+            }
+        } else {
+            setIsHubsMapped(true);
+        }
+    }, [user, hubs, isHubsMapped]);
+
+    useEffect(() => {
         if (addedRoles.length === 0 && activeTab === "kho") {
             setActiveTab("vai-tro");
         }
     }, [addedRoles.length, activeTab]);
 
     const onSubmit = (data: FormValues) => {
+        if (isReadOnly) return;
         setIsConfirmOpen(true);
     };
 
     const handleConfirmSave = () => {
         setIsConfirmOpen(false);
-        navigate("/admin/user-management/list");
+        navigate("/administration/user-management/list");
     };
 
     if (isLoading) {
         return (
             <div className="flex items-center justify-center p-12">
                 <div className="text-muted-foreground">
-                    Đang tải thông tin...
+                    {t("Loading information...", "Đang tải thông tin...")}
                 </div>
             </div>
         );
@@ -184,16 +241,17 @@ const UpdateUser = () => {
                     {/* Row 1 */}
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Email <span className="text-destructive">*</span>
+                            {t("Email")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             {...register("email")}
+                            disabled={isReadOnly}
                             aria-invalid={!!errors.email}
                         />
                         <FieldError>{errors.email?.message}</FieldError>
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Giới Tính</Label>
+                        <Label>{t("Gender", "Giới Tính")}</Label>
                         <Controller
                             control={control}
                             name="profile.gender"
@@ -201,30 +259,33 @@ const UpdateUser = () => {
                                 <RadioGroup
                                     value={field.value}
                                     onValueChange={field.onChange}
+                                    disabled={isReadOnly}
                                     className="flex items-center gap-4 mt-2"
                                 >
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem
                                             value="FEMALE"
                                             id="gender-nu"
+                                            disabled={isReadOnly}
                                         />
                                         <Label
                                             htmlFor="gender-nu"
                                             className="font-normal"
                                         >
-                                            Nữ
+                                            {t("Female", "Nữ")}
                                         </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem
                                             value="MALE"
                                             id="gender-nam"
+                                            disabled={isReadOnly}
                                         />
                                         <Label
                                             htmlFor="gender-nam"
                                             className="font-normal"
                                         >
-                                            Nam
+                                            {t("Male", "Nam")}
                                         </Label>
                                     </div>
                                 </RadioGroup>
@@ -232,7 +293,7 @@ const UpdateUser = () => {
                         />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Trạng Thái</Label>
+                        <Label>{t("Status", "Trạng Thái")}</Label>
                         <Controller
                             control={control}
                             name="status"
@@ -241,34 +302,37 @@ const UpdateUser = () => {
                                     value={field.value}
                                     options={statusOptions}
                                     onChange={field.onChange}
-                                    placeholder="Chọn trạng thái"
+                                    placeholder={t("Select status", "Chọn trạng thái")}
+                                    disabled={isReadOnly}
                                 />
                             )}
                         />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Mã</Label>
-                        <Input {...register("profile.code")} />
+                        <Label>{t("Code", "Mã")}</Label>
+                        <Input {...register("profile.code")} disabled={isReadOnly} />
                     </Field>
 
                     {/* Row 2 */}
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Tên Đăng Nhập{" "}
+                            {t("Username", "Tên Đăng Nhập")}{" "}
                             <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             {...register("name")}
+                            disabled={isReadOnly}
                             aria-invalid={!!errors.name}
                         />
                         <FieldError>{errors.name?.message}</FieldError>
                     </Field>
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Tên <span className="text-destructive">*</span>
+                            {t("First Name", "Tên")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             {...register("profile.first_name")}
+                            disabled={isReadOnly}
                             aria-invalid={!!errors.profile?.first_name}
                         />
                         <FieldError>
@@ -277,10 +341,11 @@ const UpdateUser = () => {
                     </Field>
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Họ <span className="text-destructive">*</span>
+                            {t("Last Name", "Họ")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             {...register("profile.last_name")}
+                            disabled={isReadOnly}
                             aria-invalid={!!errors.profile?.last_name}
                         />
                         <FieldError>
@@ -288,16 +353,16 @@ const UpdateUser = () => {
                         </FieldError>
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>SĐT Liên Hệ</Label>
-                        <Input {...register("profile.contact_phone")} />
+                        <Label>{t("Contact Phone", "SĐT Liên Hệ")}</Label>
+                        <Input {...register("profile.contact_phone")} disabled={isReadOnly} />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Email Liên Hệ</Label>
-                        <Input {...register("profile.contact_email")} />
+                        <Label>{t("Contact Email", "Email Liên Hệ")}</Label>
+                        <Input {...register("profile.contact_email")} disabled={isReadOnly} />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Địa Điểm</Label>
-                        <Input {...register("profile.location")} />
+                        <Label>{t("Location", "Địa Điểm")}</Label>
+                        <Input {...register("profile.location")} disabled={isReadOnly} />
                     </Field>
                 </div>
             </Card>
@@ -307,7 +372,7 @@ const UpdateUser = () => {
                 <Tabs
                     value={activeTab}
                     onValueChange={setActiveTab}
-                    className="w-full"
+                    className="w-full relative"
                 >
                     <div className="flex justify-between items-center mb-4">
                         <TabsList className="w-fit border bg-background p-1 gap-1 shadow-sm">
@@ -315,14 +380,14 @@ const UpdateUser = () => {
                                 value="vai-tro"
                                 className="rounded-md px-4 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                             >
-                                Vai Trò
+                                {t("Role", "Vai Trò")}
                             </TabsTrigger>
                             {addedRoles.length > 0 && (
                                 <TabsTrigger
                                     value="kho"
                                     className="rounded-md px-4 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                                 >
-                                    Kho
+                                    {t("Hub", "Kho")}
                                 </TabsTrigger>
                             )}
                         </TabsList>
@@ -332,6 +397,7 @@ const UpdateUser = () => {
                         <RoleSelectionTab
                             selectedRoles={addedRoles}
                             onChange={setAddedRoles}
+                            disabled={isReadOnly}
                         />
                     </TabsContent>
 
@@ -339,62 +405,95 @@ const UpdateUser = () => {
                         <HubSelectionTab
                             selectedHubs={addedHubs}
                             onChange={setAddedHubs}
+                            disabled={isReadOnly}
                         />
                     </TabsContent>
                 </Tabs>
 
                 <div className="flex justify-end gap-2 mt-6">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button type="button" variant="outline">
-                                Hủy
+                    {isReadOnly ? (
+                        <>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                    navigate("/administration/user-management/list")
+                                }
+                            >
+                                {t("Back", "Quay lại")}
                             </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent size="sm">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    Hủy thao tác
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Bạn có chắc chắn muốn hủy quá trình cập nhật
-                                    người dùng? Các thông tin đã sửa sẽ không
-                                    được lưu.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Huỷ</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() =>
-                                        navigate("/admin/user-management/list")
-                                    }
-                                    className="bg-blue-600 hover:bg-blue-700"
-                                >
-                                    Đồng ý
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                            <Button
+                                type="button"
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                onClick={() =>
+                                    navigate(
+                                        `/administration/user-management/update/${id}`,
+                                    )
+                                }
+                            >
+                                {t("Update", "Cập nhật")}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button type="button" variant="outline">
+                                        {t("Cancel", "Hủy")}
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent size="sm">
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                            {t("Cancel action", "Hủy thao tác")}
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {t(
+                                                "Are you sure you want to cancel the user update process? Modified information will not be saved.",
+                                                "Bạn có chắc chắn muốn hủy quá trình cập nhật người dùng? Các thông tin đã sửa sẽ không được lưu.",
+                                            )}
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>{t("Cancel", "Huỷ")}</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={() =>
+                                                navigate(
+                                                    "/administration/user-management/list",
+                                                )
+                                            }
+                                            className="bg-blue-600 hover:bg-blue-700"
+                                        >
+                                            {t("Confirm", "Đồng ý")}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
 
-                    <Button type="submit">Lưu</Button>
+                            <Button type="submit">{t("Save", "Lưu")}</Button>
+                        </>
+                    )}
                 </div>
             </Card>
 
             <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
                 <AlertDialogContent size="sm">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Lưu thông tin</AlertDialogTitle>
+                        <AlertDialogTitle>{t("Save information", "Lưu thông tin")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Bạn có chắc chắn muốn cập nhật người dùng này
-                            không?
+                            {t(
+                                "Are you sure you want to update this user?",
+                                "Bạn có chắc chắn muốn cập nhật người dùng này không?",
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                        <AlertDialogCancel>{t("Cancel", "Huỷ")}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleConfirmSave}
                             className="bg-blue-600 hover:bg-blue-700"
                         >
-                            Đồng ý
+                            {t("Confirm", "Đồng ý")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,35 +22,36 @@ import {
     type ComboOption,
 } from "@/components/select-box/select-box";
 
-import type { RoleItem } from "@/types/role-permission";
 import type { HubItem } from "@/services/hubService";
+import type { RoleItem } from "@/types/role-permission";
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Field, FieldError } from "@/components/ui/field";
+import { t } from "i18next";
 
 import { RoleSelectionTab } from "./components/RoleSelectionTab";
 import { HubSelectionTab } from "./components/HubSelectionTab";
 
 const statusOptions: ComboOption[] = [
-    { label: "Hoạt Động", value: "AC" },
-    { label: "Không Hoạt Động", value: "IN" },
+    { label: t("Active", "Hoạt Động"), value: "AC" },
+    { label: t("Inactive", "Không Hoạt Động"), value: "IN" },
 ];
 
 const formSchema = z
     .object({
         email: z
             .string()
-            .min(1, "Vui lòng nhập Email")
-            .email("Email không hợp lệ"),
-        password: z.string().min(6, "Mật khẩu ít nhất 6 ký tự"),
-        confirm_password: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
-        name: z.string().min(1, "Vui lòng nhập tên đăng nhập"),
+            .min(1, t("Please enter Email", "Vui lòng nhập Email"))
+            .email(t("Invalid Email", "Email không hợp lệ")),
+        password: z.string().min(6, t("Password must be at least 6 characters", "Mật khẩu ít nhất 6 ký tự")),
+        confirm_password: z.string().min(1, t("Please confirm password", "Vui lòng xác nhận mật khẩu")),
+        name: z.string().min(1, t("Please enter username", "Vui lòng nhập tên đăng nhập")),
         profile: z.object({
             full_name: z.string().optional(),
-            first_name: z.string().min(1, "Vui lòng nhập tên"),
-            last_name: z.string().min(1, "Vui lòng nhập họ"),
+            first_name: z.string().min(1, t("Please enter first name", "Vui lòng nhập tên")),
+            last_name: z.string().min(1, t("Please enter last name", "Vui lòng nhập họ")),
             gender: z.string(),
             contact_phone: z.string().optional(),
             contact_email: z.string().optional(),
@@ -64,7 +65,7 @@ const formSchema = z
         hub_list: z.array(z.any()).optional(),
     })
     .refine((data) => data.password === data.confirm_password, {
-        message: "Mật khẩu xác nhận không khớp",
+        message: t("Confirm password does not match", "Mật khẩu xác nhận không khớp"),
         path: ["confirm_password"],
     });
 
@@ -77,7 +78,7 @@ const CreateUser = () => {
     const [addedRoles, setAddedRoles] = useState<RoleItem[]>([]);
     const [addedHubs, setAddedHubs] = useState<HubItem[]>([]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (addedRoles.length === 0 && activeTab === "kho") {
             setActiveTab("vai-tro");
         }
@@ -119,7 +120,7 @@ const CreateUser = () => {
 
     const handleConfirmSave = () => {
         setIsConfirmOpen(false);
-        navigate("/admin/user-management/list");
+        navigate("/administration/user-management/list");
     };
 
     return (
@@ -130,7 +131,7 @@ const CreateUser = () => {
                     {/* Row 1 */}
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Email <span className="text-destructive">*</span>
+                            {t("Email")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             {...register("email")}
@@ -140,7 +141,7 @@ const CreateUser = () => {
                     </Field>
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Mật Khẩu <span className="text-destructive">*</span>
+                            {t("Password", "Mật Khẩu")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             type="password"
@@ -151,7 +152,7 @@ const CreateUser = () => {
                     </Field>
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Xác Nhận Mật Khẩu
+                            {t("Confirm Password", "Xác Nhận Mật Khẩu")}
                             <span className="text-destructive">*</span>
                         </Label>
                         <Input
@@ -164,7 +165,7 @@ const CreateUser = () => {
                         </FieldError>
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Giới Tính</Label>
+                        <Label>{t("Gender", "Giới Tính")}</Label>
                         <Controller
                             control={control}
                             name="profile.gender"
@@ -183,7 +184,7 @@ const CreateUser = () => {
                                             htmlFor="gender-nu"
                                             className="font-normal"
                                         >
-                                            Nữ
+                                            {t("Female", "Nữ")}
                                         </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
@@ -195,7 +196,7 @@ const CreateUser = () => {
                                             htmlFor="gender-nam"
                                             className="font-normal"
                                         >
-                                            Nam
+                                            {t("Male", "Nam")}
                                         </Label>
                                     </div>
                                 </RadioGroup>
@@ -203,7 +204,7 @@ const CreateUser = () => {
                         />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Trạng Thái</Label>
+                        <Label>{t("Status", "Trạng Thái")}</Label>
                         <Controller
                             control={control}
                             name="status"
@@ -212,20 +213,20 @@ const CreateUser = () => {
                                     value={field.value}
                                     options={statusOptions}
                                     onChange={field.onChange}
-                                    placeholder="Chọn trạng thái"
+                                    placeholder={t("Select status", "Chọn trạng thái")}
                                 />
                             )}
                         />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Mã</Label>
+                        <Label>{t("Code", "Mã")}</Label>
                         <Input {...register("profile.code")} />
                     </Field>
 
                     {/* Row 2 */}
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Tên Đăng Nhập{" "}
+                            {t("Username", "Tên Đăng Nhập")}{" "}
                             <span className="text-destructive">*</span>
                         </Label>
                         <Input
@@ -236,7 +237,7 @@ const CreateUser = () => {
                     </Field>
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Tên <span className="text-destructive">*</span>
+                            {t("First Name", "Tên")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             {...register("profile.first_name")}
@@ -248,7 +249,7 @@ const CreateUser = () => {
                     </Field>
                     <Field className="flex flex-col gap-2">
                         <Label>
-                            Họ <span className="text-destructive">*</span>
+                            {t("Last Name", "Họ")} <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             {...register("profile.last_name")}
@@ -259,15 +260,15 @@ const CreateUser = () => {
                         </FieldError>
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>SĐT Liên Hệ</Label>
+                        <Label>{t("Contact Phone", "SĐT Liên Hệ")}</Label>
                         <Input {...register("profile.contact_phone")} />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Email Liên Hệ</Label>
+                        <Label>{t("Contact Email", "Email Liên Hệ")}</Label>
                         <Input {...register("profile.contact_email")} />
                     </Field>
                     <Field className="flex flex-col gap-2">
-                        <Label>Địa Điểm</Label>
+                        <Label>{t("Location", "Địa Điểm")}</Label>
                         <Input {...register("profile.location")} />
                     </Field>
                 </div>
@@ -286,14 +287,14 @@ const CreateUser = () => {
                                 value="vai-tro"
                                 className="rounded-md px-4 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                             >
-                                Vai Trò
+                                {t("Role", "Vai Trò")}
                             </TabsTrigger>
                             {addedRoles.length > 0 && (
                                 <TabsTrigger
                                     value="kho"
                                     className="rounded-md px-4 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
                                 >
-                                    Kho
+                                    {t("Hub", "Kho")}
                                 </TabsTrigger>
                             )}
                         </TabsList>
@@ -318,53 +319,59 @@ const CreateUser = () => {
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button type="button" variant="outline">
-                                Hủy
+                                {t("Cancel", "Hủy")}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent size="sm">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                    Hủy thao tác
+                                    {t("Cancel action", "Hủy thao tác")}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Bạn có chắc chắn muốn hủy quá trình tạo
-                                    người dùng? Các thông tin đã nhập sẽ không
-                                    được lưu.
+                                    {t(
+                                        "Are you sure you want to cancel the user creation process? Entered information will not be saved.",
+                                        "Bạn có chắc chắn muốn hủy quá trình tạo người dùng? Các thông tin đã nhập sẽ không được lưu.",
+                                    )}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                                <AlertDialogCancel>{t("Cancel", "Huỷ")}</AlertDialogCancel>
                                 <AlertDialogAction
                                     onClick={() =>
-                                        navigate("/admin/user-management/list")
+                                        navigate(
+                                            "/administration/user-management/list",
+                                        )
                                     }
                                     className="bg-blue-600 hover:bg-blue-700"
                                 >
-                                    Đồng ý
+                                    {t("Confirm", "Đồng ý")}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
 
-                    <Button type="submit">Lưu</Button>
+                    <Button type="submit">{t("Save", "Lưu")}</Button>
                 </div>
             </Card>
 
             <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
                 <AlertDialogContent size="sm">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Lưu thông tin</AlertDialogTitle>
+                        <AlertDialogTitle>{t("Save information", "Lưu thông tin")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Bạn có chắc chắn muốn tạo người dùng này không?
+                            {t(
+                                "Are you sure you want to create this user?",
+                                "Bạn có chắc chắn muốn tạo người dùng này không?",
+                            )}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Huỷ</AlertDialogCancel>
+                        <AlertDialogCancel>{t("Cancel", "Huỷ")}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleConfirmSave}
                             className="bg-blue-600 hover:bg-blue-700"
                         >
-                            Đồng ý
+                            {t("Confirm", "Đồng ý")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

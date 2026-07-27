@@ -17,20 +17,12 @@ const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 const UserPage = lazy(() => import("@/pages/user/UserPage"));
 
 // admin pages
-const PermissionPage = lazy(
-    () => import("@/pages/admin/permission/RolePermission"),
-);
+const PermissionPage = lazy(() => import("@/pages/admin/permission/RolePermission"));
 
 const UserList = lazy(() => import("@/pages/admin/user-management/UserList"));
-const CreateUser = lazy(
-    () => import("@/pages/admin/user-management/CreateUser"),
-);
-const UpdateUser = lazy(
-    () => import("@/pages/admin/user-management/UpdateUser"),
-);
-const LanguageManagement = lazy(
-    () => import("@/pages/admin/translation/Translation"),
-);
+const CreateUser = lazy(() => import("@/pages/admin/user-management/CreateUser"));
+const UpdateUser = lazy(() => import("@/pages/admin/user-management/UpdateUser"));
+const LanguageManagement = lazy(() => import("@/pages/admin/translation/Translation"));
 
 // not found page
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
@@ -166,7 +158,15 @@ export const router = createBrowserRouter([
                                         path: "update/:id",
                                         element: (
                                             <S>
-                                                <UpdateUser />
+                                                <UpdateUser mode="edit" />
+                                            </S>
+                                        ),
+                                    },
+                                    {
+                                        path: "view/:id",
+                                        element: (
+                                            <S>
+                                                <UpdateUser mode="view" />
                                             </S>
                                         ),
                                     },
