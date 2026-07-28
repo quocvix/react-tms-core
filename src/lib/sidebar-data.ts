@@ -1,11 +1,4 @@
-import {
-    FolderKanban,
-    LayoutDashboard,
-    ReceiptText,
-    Settings,
-    ShieldCheck,
-    Users,
-} from "lucide-react";
+import { FolderKanban, LayoutDashboard, ReceiptText, Settings, ShieldCheck, Users } from "lucide-react";
 
 import type { SidebarRootItem } from "@/components/sidebar/sidebar-nav-item";
 import type { TFunction } from "i18next";
@@ -61,10 +54,10 @@ export const getSidebarMenu = (t: TFunction): SidebarRootItem[] => [
         ],
     },
     {
-        title: t("Billing"),
+        title: t("Reports"),
         icon: ReceiptText,
         children: [
-            { title: t("Invoices"), url: "/billing/invoices" },
+            { title: t("Inventory"), url: "/report/inventory" },
             { title: t("Subscriptions"), url: "/billing/subscriptions" },
             { title: t("Reports"), url: "/billing/reports" },
         ],
@@ -85,10 +78,6 @@ export const getSidebarMenu = (t: TFunction): SidebarRootItem[] => [
             {
                 title: t("Translation"),
                 url: "/administration/translation",
-            },
-            {
-                title: t("Audit Logs"),
-                url: "/administration/audit-logs",
             },
         ],
     },

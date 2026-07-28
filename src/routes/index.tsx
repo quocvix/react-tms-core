@@ -16,7 +16,10 @@ const WorkersPage = lazy(() => import("@/pages/projects/backend/WorkersPage"));
 const SettingsPage = lazy(() => import("@/pages/settings/SettingsPage"));
 const UserPage = lazy(() => import("@/pages/user/UserPage"));
 
-// admin pages
+// Report
+const InventoryReport = lazy(() => import("@/pages/report/InventoryReport"));
+
+// Administration
 const PermissionPage = lazy(() => import("@/pages/admin/permission/RolePermission"));
 
 const UserList = lazy(() => import("@/pages/admin/user-management/UserList"));
@@ -108,6 +111,20 @@ export const router = createBrowserRouter([
                                         ),
                                     },
                                 ],
+                            },
+                        ],
+                    },
+                    {
+                        path: "report",
+                        handle: { activeSidebar: "report" },
+                        children: [
+                            {
+                                path: "inventory",
+                                element: (
+                                    <S>
+                                        <InventoryReport />
+                                    </S>
+                                ),
                             },
                         ],
                     },

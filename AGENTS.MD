@@ -121,6 +121,7 @@ Remove only unused code introduced by your own changes.
 ### UI & Styling
 * Use Tailwind CSS utility classes and `cn()` from `@/lib/utils` for conditional class joining.
 * Preserve relative/absolute layout hierarchy when working with tabs or nested containers (e.g., ensure `<Tabs className="w-full relative">` is relative if child tabs position absolute controls).
+* **Lucide Icons**: Do NOT add hardcoded sizing/spacing classes like `mr-2 h-4 w-4` to Lucide icons. Pass `<Icon />` or `<Icon className="" />` (or only animation classes like `animate-spin` when needed).
 
 ---
 
