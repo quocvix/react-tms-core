@@ -5,15 +5,13 @@ import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
 import { AntdTable, TableSlot } from "@/components/table/antd-table";
 import { Button } from "@/components/ui/button";
-import {
-    DynamicSearchBox,
-    type SearchFieldConfig,
-} from "@/components/search-box/dynamic-search-box";
+import { DynamicSearchBox, type SearchFieldConfig } from "@/components/search-box/dynamic-search-box";
 import { useTableColumns } from "@/hooks/useTableColumns";
 import inventoryReportService, {
     type InventorySearchParams,
     type InventoryReportItem,
 } from "@/services/inventoryReport";
+import AutocompleteWithAsync from "@/components/shadcn-space/autocomplete/autocomplete-05";
 
 const defaultSearchParams: InventorySearchParams = {
     hub_id: "",
@@ -37,18 +35,12 @@ export default function InventoryReport() {
                 fetchOptions: async () => {
                     try {
                         const res = await inventoryReportService.getHubs();
-                        const hubs = Array.isArray(res) ? res : res?.data ?? [];
+                        const hubs = Array.isArray(res) ? res : (res?.data ?? []);
                         return [
                             { label: t("All"), value: "" },
                             ...hubs.map((hub: any) => ({
-                                label:
-                                    hub.name ||
-                                    hub.warehouse_code ||
-                                    hub.code ||
-                                    String(hub.id),
-                                value: String(
-                                    hub.id ?? hub.warehouse_code ?? hub.code,
-                                ),
+                                label: hub.name || hub.warehouse_code || hub.code || String(hub.id),
+                                value: String(hub.id ?? hub.warehouse_code ?? hub.code),
                             })),
                         ];
                     } catch {
@@ -71,8 +63,7 @@ export default function InventoryReport() {
     );
 
     // ─── Search & Pagination state ──────────────────────────────────────────────
-    const [submittedParams, setSubmittedParams] =
-        useState<InventorySearchParams>(defaultSearchParams);
+    const [submittedParams, setSubmittedParams] = useState<InventorySearchParams>(defaultSearchParams);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -99,9 +90,7 @@ export default function InventoryReport() {
             queryClient.invalidateQueries({ queryKey: ["inventory-report"] });
         },
         onError: (error: any) => {
-            toast.error(
-                error?.response?.data?.message || t("Sync failed"),
-            );
+            toast.error(error?.response?.data?.message || t("Sync failed"));
         },
     });
 
@@ -179,15 +168,15 @@ export default function InventoryReport() {
                 isCollapsed={isCollapseSearch}
             />
 
+            <AutocompleteWithAsync />
+
             {/* Table */}
             <AntdTable<InventoryReportItem>
                 columns={columns}
                 dataSource={inventoryItems}
                 loading={isLoading}
                 skeletonName="inventory-report"
-                rowKey={(record) =>
-                    record.id ?? `${record.hub_name}-${record.item_code}`
-                }
+                rowKey={(record) => record.id ?? `${record.hub_name}-${record.item_code}`}
                 hideLeftFooter={true}
                 paginationMeta={data?.meta?.pagination}
                 onPageChange={(p) => setPage(p)}
@@ -202,13 +191,8 @@ export default function InventoryReport() {
                 onSearchCollapseChange={setIsCollapseSearch}
             >
                 <TableSlot name="rightAction">
-                    <Button
-                        onClick={() => syncMutation.mutate()}
-                        disabled={syncMutation.isPending}
-                    >
-                        <RefreshCw
-                            className={syncMutation.isPending ? "animate-spin" : ""}
-                        />
+                    <Button onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>
+                        <RefreshCw className={syncMutation.isPending ? "animate-spin" : ""} />
                         {t("Sync Now")}
                     </Button>
                 </TableSlot>
