@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useMemo } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
@@ -7,11 +7,11 @@ import { AntdTable, TableSlot } from "@/components/table/antd-table";
 import { Button } from "@/components/ui/button";
 import { DynamicSearchBox, type SearchFieldConfig } from "@/components/search-box/dynamic-search-box";
 import { useTableColumns } from "@/hooks/useTableColumns";
+import { useDataTable } from "@/hooks/useDataTable";
 import inventoryReportService, {
     type InventorySearchParams,
     type InventoryReportItem,
 } from "@/services/inventoryReport";
-import AutocompleteWithAsync from "@/components/shadcn-space/autocomplete/autocomplete-05";
 
 const defaultSearchParams: InventorySearchParams = {
     hub_id: "",
@@ -56,67 +56,51 @@ export default function InventoryReport() {
             {
                 name: "item_name",
                 label: t("Product Name"),
-                type: "text",
+                type: "autocomplete-async",
+                getValue: (item: any) => (typeof item === "string" ? item : (item?.item_name ?? item?.name ?? "")),
+                getLabel: (item: any) => (typeof item === "string" ? item : (item?.item_name ?? item?.name ?? "")),
+                fetchAsyncOptions: async (query: string) => {
+                    if (!query) return [];
+                    const res = await inventoryReportService.getItemNameAutocomplete(query);
+                    return Array.isArray(res) ? res : (res?.data ?? []);
+                },
             },
         ],
         [t],
     );
 
-    // ─── Search & Pagination state ──────────────────────────────────────────────
-    const [submittedParams, setSubmittedParams] = useState<InventorySearchParams>(defaultSearchParams);
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(20);
-    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-    const [isCollapseSearch, setIsCollapseSearch] = useState(false);
-
-    // ─── React Query ────────────────────────────────────────────────────────────
-    const { data, isLoading } = useQuery({
-        queryKey: ["inventory-report", submittedParams, page, limit],
-        queryFn: () =>
-            inventoryReportService.getList({
-                ...submittedParams,
-                page,
-                limit,
-            }),
+    // ─── DataTable Hook ─────────────────────────────────────────────────────────
+    const {
+        data,
+        isLoading,
+        page,
+        setPage,
+        limit,
+        setLimit,
+        rowSelection,
+        isCollapseSearch,
+        setIsCollapseSearch,
+        handleSearch,
+        handleReset,
+    } = useDataTable<InventorySearchParams>({
+        queryKey: "inventory-report",
+        defaultParams: defaultSearchParams,
+        fetcher: (params) => inventoryReportService.getList(params),
     });
 
     const inventoryItems = data?.data ?? [];
 
     // ─── Sync Now Mutation ──────────────────────────────────────────────────────
     const syncMutation = useMutation({
-        mutationFn: () => inventoryReportService.postSyncNow(),
-        onSuccess: () => {
-            toast.success(t("Sync successfully"));
+        mutationFn: () => inventoryReportService.postSyncNow({ type: "inventory" }),
+        onSuccess: (response: any) => {
+            toast.success(response?.data.message);
             queryClient.invalidateQueries({ queryKey: ["inventory-report"] });
         },
         onError: (error: any) => {
             toast.error(error?.response?.data?.message || t("Sync failed"));
         },
     });
-
-    // ─── Callbacks cho SearchBox ────────────────────────────────────────────────
-    const handleSearch = useCallback((params: InventorySearchParams) => {
-        setSubmittedParams(params);
-        setPage(1);
-        setSelectedRowKeys([]);
-    }, []);
-
-    const handleReset = useCallback(() => {
-        setSubmittedParams(defaultSearchParams);
-        setPage(1);
-        setSelectedRowKeys([]);
-    }, []);
-
-    // ─── Row Selection ──────────────────────────────────────────────────────────
-    const rowSelection = useMemo(
-        () => ({
-            selectedRowKeys,
-            onChange: (newSelectedRowKeys: React.Key[]) => {
-                setSelectedRowKeys(newSelectedRowKeys);
-            },
-        }),
-        [selectedRowKeys],
-    );
 
     // ─── Columns Definition ─────────────────────────────────────────────────────
     const baseColumns = useMemo(
@@ -167,8 +151,6 @@ export default function InventoryReport() {
                 onReset={handleReset}
                 isCollapsed={isCollapseSearch}
             />
-
-            <AutocompleteWithAsync />
 
             {/* Table */}
             <AntdTable<InventoryReportItem>

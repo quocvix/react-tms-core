@@ -162,6 +162,18 @@ const Autocomplete = ({
   }, [highlightedValue, selectItem])
 
   useEffect(() => {
+    if (valueProp !== undefined) {
+      if (valueProp === null || valueProp === '') {
+        setInputValueState('')
+        setSelectedValue(null)
+        setSelectedLabel(null)
+      } else {
+        setSelectedValue(valueProp)
+      }
+    }
+  }, [valueProp])
+
+  useEffect(() => {
     if (!isOpen) return
     const handler = (e: MouseEvent) => {
       const t = e.target as Node

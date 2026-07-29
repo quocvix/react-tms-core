@@ -39,7 +39,7 @@ const inventoryReportService = {
         } else if (params) {
             const searchParams = new URLSearchParams();
             Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined && value !== null && value !== "") {
+                if (value !== undefined && value !== null) {
                     searchParams.append(key, String(value));
                 }
             });
@@ -63,6 +63,14 @@ const inventoryReportService = {
         const res = await api.post(
             API.URL_INTERGRATION_V1 + `/inbound/sync`,
             data,
+        );
+        return res.data;
+    },
+
+    getItemNameAutocomplete: async (query: string = "") => {
+        const params = `?litmit=20&item_name=${encodeURIComponent(query)}`;
+        const res = await api.get(
+            API.URL_MASTER_DATA_V1 + `/gonsa/items/auto-complete/item-name${params}`,
         );
         return res.data;
     },

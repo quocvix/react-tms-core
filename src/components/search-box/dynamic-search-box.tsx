@@ -11,10 +11,11 @@ import {
     type ComboOption,
 } from "@/components/select-box/select-box";
 import { SelectSearchBox } from "@/components/select-box/select-search-box";
+import AutocompleteWithAsync from "@/components/autocomplete/autocomplete-async";
 
 // ─── Field Config Types ──────────────────────────────────────────────────────
 
-export type SearchFieldType = "text" | "select" | "select-search";
+export type SearchFieldType = "text" | "select" | "select-search" | "autocomplete-async";
 
 export interface SearchFieldConfig {
     /** Key để map với object form (vd: "email", "role_id") */
@@ -32,6 +33,12 @@ export interface SearchFieldConfig {
      * Nếu có, sẽ ghi đè lên `options` tĩnh sau khi fetch xong.
      */
     fetchOptions?: () => Promise<ComboOption[]>;
+    /** Hàm fetch option bất đồng bộ theo từ khoá nhập (dùng cho autocomplete-async) */
+    fetchAsyncOptions?: (query: string) => Promise<any[]>;
+    /** Hàm custom lấy value cho autocomplete-async */
+    getValue?: (item: any) => string;
+    /** Hàm custom lấy label cho autocomplete-async */
+    getLabel?: (item: any) => string;
     /** Clearable cho select-search */
     clearable?: boolean;
     /** Disabled */
@@ -151,6 +158,26 @@ export function DynamicSearchBox<T extends Record<string, any>>({
                                 placeholder={field.placeholder}
                                 clearable={field.clearable}
                                 disabled={field.disabled}
+                            />
+                        )}
+                    />
+                );
+
+            case "autocomplete-async":
+                return (
+                    <Controller
+                        name={field.name as any}
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                            <AutocompleteWithAsync
+                                value={value ?? ""}
+                                onChange={onChange}
+                                placeholder={field.placeholder}
+                                fetchOptions={field.fetchAsyncOptions}
+                                getValue={field.getValue}
+                                getLabel={field.getLabel}
+                                disabled={field.disabled}
+                                showClear={field.clearable ?? false}
                             />
                         )}
                     />
