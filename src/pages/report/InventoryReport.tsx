@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -73,7 +73,6 @@ export default function InventoryReport() {
     const {
         data,
         isLoading,
-        page,
         setPage,
         limit,
         setLimit,
@@ -157,7 +156,6 @@ export default function InventoryReport() {
                 columns={columns}
                 dataSource={inventoryItems}
                 loading={isLoading}
-                skeletonName="inventory-report"
                 rowKey={(record) => record.id ?? `${record.hub_name}-${record.item_code}`}
                 hideLeftFooter={true}
                 paginationMeta={data?.meta?.pagination}

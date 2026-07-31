@@ -3,11 +3,9 @@ import React, {
     useEffect,
     useRef,
     useState,
-    useMemo,
 } from "react";
 import { Table, ConfigProvider, theme } from "antd";
 import type { TableProps } from "antd";
-import { Skeleton } from "boneyard-js/react";
 import { useThemeStore } from "@/stores/useThemeStore";
 import { Card } from "../ui/card";
 import {
@@ -41,7 +39,6 @@ interface AntdTableProps<T> extends TableProps<T> {
     showSearchToggle?: boolean;
     isSearchCollapsed?: boolean;
     onSearchCollapseChange?: (collapsed: boolean) => void;
-    skeletonName?: string;
     borderless?: boolean;
 }
 
@@ -62,7 +59,6 @@ export function AntdTable<T extends object>({
     showSearchToggle,
     isSearchCollapsed,
     onSearchCollapseChange,
-    skeletonName,
     borderless,
     ...props
 }: AntdTableProps<T>) {
@@ -120,37 +116,6 @@ export function AntdTable<T extends object>({
             slots[child.props.name] = child;
         }
     });
-
-    // ─── Auto-generate Boneyard Fixture ──────────────────────────────────
-    const boneyardFixture = useMemo(() => {
-        if (!skeletonName || !columns) return undefined;
-        return Array.from({ length: 5 }).map((_, i) => {
-            const row: any = { id: `mock-${i}`, key: `mock-${i}` };
-            columns.forEach((col: any) => {
-                const dataKey = col.dataIndex || col.key;
-                if (dataKey) {
-                    row[dataKey] = "----------";
-                }
-            });
-            return row;
-        });
-    }, [skeletonName, columns]);
-
-    const renderTable = (data: any, forceNotLoading = false) => (
-        <Table
-            columns={columns}
-            dataSource={data}
-            className="antd-table border border-border border-x-0"
-            {...props}
-            scroll={{
-                x: "max-content",
-                y: tableScrollY,
-                ...(props.scroll || {}),
-            }}
-            pagination={false}
-            loading={forceNotLoading ? false : props.loading}
-        />
-    );
 
     return (
         <ConfigProvider
@@ -261,17 +226,18 @@ export function AntdTable<T extends object>({
                 )}
 
                 <div ref={tableWrapperRef} className="w-full">
-                    {skeletonName ? (
-                        <Skeleton
-                            name={skeletonName}
-                            loading={Boolean(props.loading)}
-                            fixture={renderTable(boneyardFixture, true)}
-                        >
-                            {renderTable(dataSource)}
-                        </Skeleton>
-                    ) : (
-                        renderTable(dataSource)
-                    )}
+                    <Table
+                        columns={columns}
+                        dataSource={dataSource}
+                        className="antd-table border border-border border-x-0"
+                        {...props}
+                        scroll={{
+                            x: "max-content",
+                            y: tableScrollY,
+                            ...(props.scroll || {}),
+                        }}
+                        pagination={false}
+                    />
                 </div>
                 {!hideFooterTable && (
                     <div className="footer-table flex w-full justify-between mt-1">

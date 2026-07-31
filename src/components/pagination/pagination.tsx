@@ -6,11 +6,6 @@ import {
     PaginationLink,
 } from "@/components/ui/pagination";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
     ChevronFirstIcon,
     ChevronLeftIcon,
     ChevronRightIcon,

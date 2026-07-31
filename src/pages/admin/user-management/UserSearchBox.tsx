@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { t } from "i18next";
 import { STATUS, GENDER } from "@/lib/constants";
 import {

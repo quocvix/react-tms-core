@@ -16,15 +16,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import languageService, { type LanguageItem } from "@/services/translationService";
-import { Skeleton } from 'boneyard-js/react'
+import languageService from "@/services/translationService";
 
 export default function LanguageManagement() {
     const { permission } = useAuthStore();
 
     // ─── Permission Check ───────────────────────────────────────────────────
-    const isBoneyard = navigator.userAgent.includes("HeadlessChrome");
-    const hasPermission = isBoneyard || permission?.data?.some(
+    const hasPermission = permission?.data?.some(
         (p: any) => p === "language.view" || p?.name === "language.view",
     );
 
@@ -118,8 +116,7 @@ export default function LanguageManagement() {
     }
 
     return (
-        <Skeleton name="translation-card" loading={isLoading}>
-            <div className="space-y-4">
+        <div className="space-y-4">
                 {/* Search Box */}
                 <Card className="search-box grid grid-cols-6 gap-4 p-4">
                     <div className="flex flex-col">
@@ -200,6 +197,5 @@ export default function LanguageManagement() {
                     }}
                 />
             </div>
-        </Skeleton>
     );
 }

@@ -114,7 +114,7 @@ const CreateUser = () => {
         },
     });
 
-    const onSubmit = (data: FormValues) => {
+    const onSubmit = (_data: FormValues) => {
         setIsConfirmOpen(true);
     };
 

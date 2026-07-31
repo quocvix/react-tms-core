@@ -213,7 +213,7 @@ const UpdateUser: React.FC<UpdateUserProps> = ({ mode = "edit" }) => {
         }
     }, [addedRoles.length, activeTab]);
 
-    const onSubmit = (data: FormValues) => {
+    const onSubmit = (_data: FormValues) => {
         if (isReadOnly) return;
         setIsConfirmOpen(true);
     };

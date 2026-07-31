@@ -8,20 +8,9 @@ let isFetching = false;
 const ProtectedRoute = () => {
     const { loading, fetchMe, hasCheckedToken } = useAuthStore();
     const token = localStorage.getItem("access-token");
-    const isBoneyard = navigator.userAgent.includes("HeadlessChrome");
     const [starting, setStarting] = useState(true);
 
-    // ─── Boneyard bypass (chỉ hoạt động ở DEV mode) ────────────────────────
-    const isBoneyardBuild =
-        import.meta.env.DEV &&
-        new URLSearchParams(window.location.search).has("boneyard");
-
     const init = async () => {
-        if (isBoneyardBuild) {
-            setStarting(false);
-            return;
-        }
-
         if (!token) {
             // await refresh();
         }
@@ -43,15 +32,7 @@ const ProtectedRoute = () => {
         init();
     }, []);
 
-    // if (starting || loading) {
-    //     return (
-    //         <div className="flex items-center justify-center h-screen">
-    //             <Loader2 className="w-8 h-8 animate-spin" />
-    //         </div>
-    //     );
-    // }
-
-    if (!isBoneyard && (starting || loading)) {
+    if (starting || loading) {
         return (
             <div className="flex items-center justify-center h-screen">
                 <Loader2 className="w-8 h-8 animate-spin" />
@@ -59,7 +40,7 @@ const ProtectedRoute = () => {
         );
     }
 
-    if (!isBoneyardBuild && !token) {
+    if (!token) {
         return <Navigate to="/login" replace />;
     }
 

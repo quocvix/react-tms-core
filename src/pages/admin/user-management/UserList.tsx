@@ -247,7 +247,6 @@ export default function UserListPage() {
                 columns={columns}
                 dataSource={users}
                 loading={isLoading}
-                skeletonName="user-list"
                 rowKey="id"
                 hideLeftFooter={true}
                 paginationMeta={data?.meta?.pagination}
