@@ -13,7 +13,7 @@ import {
     AutocompleteList,
     AutocompleteStatus,
 } from "@/components/ui/autocomplete";
-import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 export interface AutocompleteOption {
     id?: string | number;
@@ -67,6 +67,7 @@ export default function AutocompleteWithAsync<T = AutocompleteOption>({
     showTrigger = false,
     className,
 }: AutocompleteWithAsyncProps<T>) {
+    const { t } = useTranslation();
     const [inputValue, setInputValue] = useState(value ?? "");
     const [isLoading, setIsLoading] = useState(false);
     const [results, setResults] = useState<T[]>([]);
@@ -141,7 +142,7 @@ export default function AutocompleteWithAsync<T = AutocompleteOption>({
                 }
             } catch (err: any) {
                 if (!ignore) {
-                    setError(err?.message || "Failed to fetch suggestions.");
+                    setError(err?.message || t("Failed to fetch suggestions."));
                     setResults([]);
                 }
             } finally {
@@ -153,7 +154,7 @@ export default function AutocompleteWithAsync<T = AutocompleteOption>({
             clearTimeout(timer);
             ignore = true;
         };
-    }, [inputValue, fetchOptions, debounceMs]);
+    }, [inputValue, fetchOptions, debounceMs, t]);
 
     const handleInputValueChange = (val: string) => {
         setInputValue(val);
@@ -173,15 +174,15 @@ export default function AutocompleteWithAsync<T = AutocompleteOption>({
         status = (
             <div className="flex items-center gap-2">
                 <LoaderCircleIcon className="size-4 animate-spin" />
-                Loading...
+                {t("Loading...")}
             </div>
         );
     } else if (error) {
         status = error;
     } else if (inputValue && fetchOptions && results.length === 0) {
-        status = `No results found for "${inputValue}"`;
+        status = t('No results found for "{{inputValue}}"', { inputValue });
     } else if (results.length > 0) {
-        status = `${results.length} result${results.length === 1 ? "" : "s"} found`;
+        status = t("{{count}} results found", { count: results.length });
     }
 
     return (

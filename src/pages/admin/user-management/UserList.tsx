@@ -79,7 +79,7 @@ const userSearchFields: SearchFieldConfig[] = [
         clearable: true,
         fetchOptions: async () => {
             const res = await permissionService.getRoles();
-            if (res?.data) {
+            if (Array.isArray(res?.data)) {
                 return [
                     { label: t("All"), value: "" },
                     ...res.data.map((role) => ({
@@ -117,11 +117,11 @@ export default function UserListPage() {
                         className="text-blue-600 font-medium hover:underline cursor-pointer"
                         onClick={() =>
                             navigate(
-                                `/administration/user-management/view/${r.id}`,
+                                `/administration/user-management/view/${r?.id}`,
                             )
                         }
                     >
-                        {email as string}
+                        {(email as string) ?? ""}
                     </span>
                 );
             },
@@ -132,15 +132,15 @@ export default function UserListPage() {
                     <Avatar className="h-8 w-8">
                         <AvatarImage src={url ?? undefined} />
                         <AvatarFallback className="text-xs">
-                            {(r.first_name?.[0] ?? "").toUpperCase()}
-                            {(r.last_name?.[0] ?? "").toUpperCase()}
+                            {(r?.first_name?.[0] ?? "").toUpperCase()}
+                            {(r?.last_name?.[0] ?? "").toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
                 );
             },
             status_name: (status_name: unknown, record: unknown) => {
                 const r = record as UserListItem;
-                const isActive = r.status === "AC";
+                const isActive = r?.status === "AC";
                 return (
                     <Badge
                         variant="outline"
@@ -150,23 +150,29 @@ export default function UserListPage() {
                                 : "bg-red-500/10 text-red-500"
                         }
                     >
-                        {t(status_name as string)}
+                        {status_name ? t(status_name as string) : ""}
                     </Badge>
                 );
             },
             role: (roles: unknown) => (
                 <div className="flex flex-wrap gap-1">
-                    {(roles as string[]).map((role) => (
-                        <Badge key={role} variant="secondary" className="text-xs">
-                            {role}
+                    {Array.isArray(roles) ? (
+                        roles.map((role) => (
+                            <Badge key={role} variant="secondary" className="text-xs">
+                                {role}
+                            </Badge>
+                        ))
+                    ) : typeof roles === "string" ? (
+                        <Badge variant="secondary" className="text-xs">
+                            {roles}
                         </Badge>
-                    ))}
+                    ) : null}
                 </div>
             ),
             gender: (gender: unknown) =>
-                (gender as string) === "MALE" ? t("Male") : t("Female"),
+                gender ? ((gender as string) === "MALE" ? t("Male") : t("Female")) : "",
             created_at: (date: unknown) =>
-                dayjs(date as string).format("DD/MM/YYYY HH:mm"),
+                date ? dayjs(date as string).format("DD/MM/YYYY HH:mm") : "",
         }),
         [navigate],
     );

@@ -65,5 +65,9 @@
     "Audit Logs": "Nhật ký kiểm toán",
     "Settings": "Cài đặt",
     "Workspace": "Không gian làm việc",
-    "Integrations": "Tích hợp"
+    "Integrations": "Tích hợp",
+    "Loading...": "Đang tải...",
+    "Failed to fetch suggestions.": "Không thể tải gợi ý.",
+    "No results found for \"{{inputValue}}\"": "Không tìm thấy kết quả cho \"{{inputValue}}\"",
+    "{{count}} results found": "Tìm thấy {{count}} kết quả"
 }

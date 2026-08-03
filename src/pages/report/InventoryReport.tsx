@@ -76,7 +76,6 @@ export default function InventoryReport() {
         setPage,
         limit,
         setLimit,
-        rowSelection,
         isCollapseSearch,
         setIsCollapseSearch,
         handleSearch,
@@ -165,7 +164,6 @@ export default function InventoryReport() {
                     setLimit(size);
                     setPage(1);
                 }}
-                rowSelection={rowSelection}
                 showSearchToggle={true}
                 isSearchCollapsed={isCollapseSearch}
                 onSearchCollapseChange={setIsCollapseSearch}

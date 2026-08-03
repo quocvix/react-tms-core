@@ -225,7 +225,11 @@
     }
 }
 
-/* Sửa lỗi font-size của table để đồng bộ với text-sm của Shadcn */
-.antd-tms-table .ant-table {
+.antd-tms-table .ant-table,
+.antd-table .ant-table {
     font-size: 0.875rem !important;
+}
+
+.antd-table .ant-table-thead > tr > th {
+    font-weight: 600 !important;
 }

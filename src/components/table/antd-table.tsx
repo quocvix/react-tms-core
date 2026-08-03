@@ -1,27 +1,16 @@
-import React, {
-    type ReactNode,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import React, { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Table, ConfigProvider, theme } from "antd";
 import type { TableProps } from "antd";
 import { useThemeStore } from "@/stores/useThemeStore";
 import { Card } from "../ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "../ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Label } from "../ui/label";
 import { t } from "i18next";
 import { Button } from "../ui/button";
 import FileTypeExcel from "@/assets/icon/svg/file-type-excel";
 import TablePagination, { type PaginationMeta } from "../pagination/pagination";
 import { Eye, EyeOff } from "lucide-react";
+import { TableBodySkeletonRow, TableBodySkeletonCell } from "@/components/skeleton/skeleton-table";
 
 // Kế thừa lại toàn bộ Props chuẩn của Antd Table để dùng đầy đủ logic
 interface AntdTableProps<T> extends TableProps<T> {
@@ -40,6 +29,7 @@ interface AntdTableProps<T> extends TableProps<T> {
     isSearchCollapsed?: boolean;
     onSearchCollapseChange?: (collapsed: boolean) => void;
     borderless?: boolean;
+    skeletonRowsCount?: number;
 }
 
 export function AntdTable<T extends object>({
@@ -60,6 +50,7 @@ export function AntdTable<T extends object>({
     isSearchCollapsed,
     onSearchCollapseChange,
     borderless,
+    skeletonRowsCount,
     ...props
 }: AntdTableProps<T>) {
     const { isDark } = useThemeStore();
@@ -73,12 +64,9 @@ export function AntdTable<T extends object>({
             const rect = tableWrapperRef.current.getBoundingClientRect();
             const headerHeight = 55; // Chiều cao dự trù của thead
             const footerHeight = hideFooterTable ? 0 : 50; // Chiều cao vùng footer-table (chứa export, pagination)
-            // 16px là padding bottom của div chứa UserList mà bạn yêu cầu trừ đi
-            // 16px nữa là padding dư dả cho Card hoặc khoảng cách an toàn
             const bottomOffset = 10 + 16 + footerHeight;
 
-            const availableHeight =
-                window.innerHeight - rect.top - headerHeight - bottomOffset;
+            const availableHeight = window.innerHeight - rect.top - headerHeight - bottomOffset;
             setTableScrollY(Math.max(200, availableHeight)); // Đảm bảo min height là 200px
         };
 
@@ -96,23 +84,52 @@ export function AntdTable<T extends object>({
         };
     }, [hideFooterTable]);
 
+    // ─── Determine Loading & Skeleton Body Data ──────────────────────────
+    const isLoading =
+        typeof props.loading === "boolean"
+            ? props.loading
+            : Boolean(typeof props.loading === "object" && props.loading !== null && props.loading.spinning);
+
+    const skeletonCount = skeletonRowsCount ?? (pageSize && pageSize > 0 ? Math.min(pageSize, 10) : 8);
+
+    const skeletonDataSource = useMemo(() => {
+        return Array.from({ length: skeletonCount }).map((_, index) => ({
+            key: `skeleton-row-${index}`,
+            id: `skeleton-row-${index}`,
+        })) as unknown as T[];
+    }, [skeletonCount]);
+
+    // Giữ nguyên columns gốc để header table không bị nhảy layout (re-measure width)
+    const effectiveDataSource = isLoading ? skeletonDataSource : dataSource;
+    const effectiveRowKey = isLoading ? "key" : props.rowKey;
+
+    const effectiveRowSelection = useMemo(() => {
+        if (!props.rowSelection) return undefined;
+        if (isLoading) {
+            return {
+                ...props.rowSelection,
+                getCheckboxProps: () => ({ disabled: true }),
+            };
+        }
+        return props.rowSelection;
+    }, [props.rowSelection, isLoading]);
+
+    // Antd custom components: ghi đè duy nhất body row và body cell khi isLoading=true từ skeleton-table.tsx
+    const components = useMemo(() => {
+        if (!isLoading) return undefined;
+
+        return {
+            body: {
+                row: TableBodySkeletonRow,
+                cell: TableBodySkeletonCell,
+            },
+        };
+    }, [isLoading]);
+
     // ─── Named Slots ─────────────────────────────────────────────────────
-    // Duyệt qua tất cả children được truyền vào giữa cặp thẻ <AntdTable>...</AntdTable>
-    // Chỉ nhận những children là <TableSlot>, các phần tử khác sẽ bị bỏ qua.
-    // Mỗi <TableSlot name="xxx"> sẽ được gán vào slots["xxx"] để render đúng vị trí.
-    //
-    // Cách sử dụng:
-    //   <AntdTable>
-    //     <TableSlot name="leftAction">  → render ở vùng left-action (bên cạnh Select)
-    //     <TableSlot name="rightAction"> → render ở vùng right-action (góc phải)
-    //   </AntdTable>
-    // ─────────────────────────────────────────────────────────────────────
     const slots: Record<string, ReactNode> = {};
     React.Children.forEach(children, (child) => {
-        if (
-            React.isValidElement<{ name: string }>(child) &&
-            child.type === TableSlot
-        ) {
+        if (React.isValidElement<{ name: string }>(child) && child.type === TableSlot) {
             slots[child.props.name] = child;
         }
     });
@@ -120,31 +137,30 @@ export function AntdTable<T extends object>({
     return (
         <ConfigProvider
             theme={{
-                // 1. Tự động chuyển đổi theo Light/Dark Mode của Shadcn (nếu có)
-                algorithm: isDark
-                    ? theme.darkAlgorithm
-                    : theme.defaultAlgorithm,
-
-                // 2. Map các biến màu và font của Shadcn (Tailwind) sang cho Antd
+                algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
                 token: {
-                    fontFamily: "var(--font-sans)", // Font hệ thống của Shadcn
+                    fontFamily: "var(--font-sans)",
                 },
-
-                // 3. Tinh chỉnh riêng giao diện Table cho chuẩn Style Shadcn
                 components: {
                     Table: isDark
                         ? {
-                              cellPaddingInline: 12, // Thu nhỏ padding một chút cho gọn
+                              cellPaddingInline: 12,
                               cellPaddingBlock: 10,
-                              headerBg: "#101826", // Màu nền header khi tối (Mặc định Antd là #1d1d1d)
-                              headerColor: "#ffffff", // Màu chữ header khi tối
-                              rowHoverBg: "#1a2535", // Màu khi di chuột (hover) vào dòng khi tối
-                              borderColor: "#1f2937", // Màu đường kẻ giữa các ô
-                              colorBgContainer: "#0b1220", // Nền của toàn bộ bảng
+                              headerBg: "#172033",
+                              headerColor: "#ffffff",
+                              headerSplitColor: "#374151",
+                              rowHoverBg: "#1a2535",
+                              borderColor: "#374151",
+                              colorBgContainer: "#0b1220",
                           }
                         : {
-                              cellPaddingInline: 12, // Thu nhỏ padding một chút cho gọn
+                              cellPaddingInline: 12,
                               cellPaddingBlock: 10,
+                              headerBg: "#f1f5f9",
+                              headerColor: "#0f172a",
+                              headerSplitColor: "#cbd5e1",
+                              rowHoverBg: "#f8fafc",
+                              borderColor: "#cbd5e1",
                           },
                     Pagination: isDark
                         ? {
@@ -155,22 +171,15 @@ export function AntdTable<T extends object>({
                 },
             }}
         >
-            <Card
-                className={`table-box ${
-                    borderless
-                        ? "shadow-none rounded-none ring-0 bg-transparent p-0"
-                        : "p-2"
-                }`}
-            >
+            <Card className={`table-box ${borderless ? "shadow-none rounded-none ring-0 bg-transparent p-0" : "p-2"}`}>
+                {/* Action Table */}
                 {!hideActionTable && (
                     <div className="action-table flex w-full justify-between mt-1">
                         {!hideLeftAction ? (
                             <div className="left-action flex items-center space-x-2">
                                 <Select
                                     value={pageSize?.toString() ?? "20"}
-                                    onValueChange={(val) =>
-                                        onPageSizeChange?.(Number(val))
-                                    }
+                                    onValueChange={(val) => onPageSizeChange?.(Number(val))}
                                 >
                                     <SelectTrigger className="w-full max-w-35">
                                         <Label>{t("Show")}:</Label>
@@ -178,38 +187,20 @@ export function AntdTable<T extends object>({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectItem value="20">
-                                                20
-                                            </SelectItem>
-                                            <SelectItem value="30">
-                                                30
-                                            </SelectItem>
-                                            <SelectItem value="40">
-                                                40
-                                            </SelectItem>
-                                            <SelectItem value="100">
-                                                100
-                                            </SelectItem>
+                                            <SelectItem value="20">20</SelectItem>
+                                            <SelectItem value="30">30</SelectItem>
+                                            <SelectItem value="40">40</SelectItem>
+                                            <SelectItem value="100">100</SelectItem>
                                         </SelectGroup>
                                     </SelectContent>
                                 </Select>
                                 {showSearchToggle && (
                                     <Button
                                         variant="ghost"
-                                        onClick={() =>
-                                            onSearchCollapseChange?.(
-                                                !isSearchCollapsed,
-                                            )
-                                        }
+                                        onClick={() => onSearchCollapseChange?.(!isSearchCollapsed)}
                                     >
-                                        {isSearchCollapsed ? (
-                                            <EyeOff className="w-4 h-4 mr-2" />
-                                        ) : (
-                                            <Eye className="w-4 h-4 mr-2" />
-                                        )}
-                                        {isSearchCollapsed
-                                            ? t("Show Search")
-                                            : t("Hide Search")}
+                                        {isSearchCollapsed ? <EyeOff /> : <Eye />}
+                                        {isSearchCollapsed ? t("Show Search Engines") : t("Hide Search Engines")}
                                     </Button>
                                 )}
                                 {slots.leftAction}
@@ -225,12 +216,17 @@ export function AntdTable<T extends object>({
                     </div>
                 )}
 
+                {/* Table */}
                 <div ref={tableWrapperRef} className="w-full">
                     <Table
-                        columns={columns}
-                        dataSource={dataSource}
-                        className="antd-table border border-border border-x-0"
                         {...props}
+                        columns={columns}
+                        dataSource={effectiveDataSource}
+                        rowKey={effectiveRowKey}
+                        rowSelection={effectiveRowSelection}
+                        components={components}
+                        loading={false}
+                        className="antd-table border border-border border-x-0"
                         scroll={{
                             x: "max-content",
                             y: tableScrollY,
@@ -239,6 +235,8 @@ export function AntdTable<T extends object>({
                         pagination={false}
                     />
                 </div>
+
+                {/* Footer Table */}
                 {!hideFooterTable && (
                     <div className="footer-table flex w-full justify-between mt-1">
                         {!hideLeftFooter ? (
@@ -253,10 +251,7 @@ export function AntdTable<T extends object>({
                         )}
                         {!hideRightFooter ? (
                             <div className="right-footer flex items-center justify-end space-x-2">
-                                <TablePagination
-                                    meta={paginationMeta}
-                                    onPageChange={onPageChange}
-                                />
+                                <TablePagination meta={paginationMeta} onPageChange={onPageChange} />
                             </div>
                         ) : (
                             <div />
