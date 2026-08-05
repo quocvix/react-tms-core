@@ -61,6 +61,7 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "projects",
+                        handle: { breadcrumb: "Projects", isClickable: false },
                         children: [
                             {
                                 index: true,
@@ -72,9 +73,11 @@ export const router = createBrowserRouter([
                             },
                             {
                                 path: "frontend",
+                                handle: { breadcrumb: "Frontend", isClickable: false },
                                 children: [
                                     {
                                         path: "web-app",
+                                        handle: { breadcrumb: "Web App" },
                                         element: (
                                             <S>
                                                 <WebAppPage />
@@ -83,6 +86,7 @@ export const router = createBrowserRouter([
                                     },
                                     {
                                         path: "landing-page",
+                                        handle: { breadcrumb: "Landing Page" },
                                         element: (
                                             <S>
                                                 <LandingPage />
@@ -93,9 +97,11 @@ export const router = createBrowserRouter([
                             },
                             {
                                 path: "backend",
+                                handle: { breadcrumb: "Backend", isClickable: false },
                                 children: [
                                     {
                                         path: "api",
+                                        handle: { breadcrumb: "API" },
                                         element: (
                                             <S>
                                                 <ApiPage />
@@ -104,6 +110,7 @@ export const router = createBrowserRouter([
                                     },
                                     {
                                         path: "workers",
+                                        handle: { breadcrumb: "Workers" },
                                         element: (
                                             <S>
                                                 <WorkersPage />
@@ -116,10 +123,15 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "report",
-                        handle: { activeSidebar: "report" },
+                        handle: { activeSidebar: "report", breadcrumb: "Reports", isClickable: false },
                         children: [
                             {
+                                index: true,
+                                element: <Navigate to="inventory" replace />,
+                            },
+                            {
                                 path: "inventory",
+                                handle: { breadcrumb: "Inventory" },
                                 element: (
                                     <S>
                                         <InventoryReport />
@@ -130,9 +142,15 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "administration",
+                        handle: { breadcrumb: "Administration", isClickable: false },
                         children: [
                             {
+                                index: true,
+                                element: <Navigate to="user-management/list" replace />,
+                            },
+                            {
                                 path: "permission",
+                                handle: { breadcrumb: "Role & Permission" },
                                 element: (
                                     <S>
                                         <PermissionPage />
@@ -141,6 +159,7 @@ export const router = createBrowserRouter([
                             },
                             {
                                 path: "translation",
+                                handle: { breadcrumb: "Translation" },
                                 element: (
                                     <S>
                                         <LanguageManagement />
@@ -149,7 +168,7 @@ export const router = createBrowserRouter([
                             },
                             {
                                 path: "user-management",
-                                handle: { activeSidebar: "user-management" },
+                                handle: { activeSidebar: "user-management", breadcrumb: "User Management" },
                                 children: [
                                     {
                                         index: true,
@@ -165,6 +184,7 @@ export const router = createBrowserRouter([
                                     },
                                     {
                                         path: "create",
+                                        handle: { breadcrumb: "Create" },
                                         element: (
                                             <S>
                                                 <CreateUser />
@@ -173,6 +193,7 @@ export const router = createBrowserRouter([
                                     },
                                     {
                                         path: "update/:id",
+                                        handle: { breadcrumb: "Update" },
                                         element: (
                                             <S>
                                                 <UpdateUser mode="edit" />
@@ -181,6 +202,7 @@ export const router = createBrowserRouter([
                                     },
                                     {
                                         path: "view/:id",
+                                        handle: { breadcrumb: "View" },
                                         element: (
                                             <S>
                                                 <UpdateUser mode="view" />
@@ -193,6 +215,7 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "settings",
+                        handle: { breadcrumb: "Settings" },
                         element: (
                             <S>
                                 <SettingsPage />
@@ -201,6 +224,7 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "user",
+                        handle: { breadcrumb: "Profile" },
                         element: (
                             <S>
                                 <UserPage />
