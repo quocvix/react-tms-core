@@ -1,5 +1,6 @@
 import API from "@/lib/api";
 import api from "@/lib/axios";
+import type { PaginationMeta } from "@/types/api";
 
 export interface LanguageResponse {
     data: Record<string, string>;
@@ -26,13 +27,7 @@ export interface LanguageItem {
 export interface LanguageTableResponse {
     data: LanguageItem[];
     meta: {
-        pagination: {
-            total: number;
-            count: number;
-            per_page: number;
-            current_page: number;
-            total_pages: number;
-        };
+        pagination: PaginationMeta;
     };
 }
 

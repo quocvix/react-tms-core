@@ -11,14 +11,9 @@ import {
     ChevronRightIcon,
     ChevronLastIcon,
 } from "lucide-react";
+import type { PaginationMeta } from "@/types/api";
 
-export interface PaginationMeta {
-    total: number;
-    count: number;
-    per_page: number;
-    current_page: number;
-    total_pages: number;
-}
+export type { PaginationMeta };
 
 interface TablePaginationProps {
     meta?: PaginationMeta;

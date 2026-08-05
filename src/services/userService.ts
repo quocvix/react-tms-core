@@ -1,4 +1,5 @@
 import api from "@/lib/axios";
+import type { PaginationMeta } from "@/types/api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -28,17 +29,7 @@ export interface UserListItem {
     hubs: string;
 }
 
-export interface PaginationMeta {
-    total: number;
-    count: number;
-    per_page: number;
-    current_page: number;
-    total_pages: number;
-    links: {
-        next?: string;
-        previous?: string;
-    };
-}
+export type { PaginationMeta };
 
 export interface UserListResponse {
     data: UserListItem[];

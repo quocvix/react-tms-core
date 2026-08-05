@@ -1,5 +1,6 @@
 import API from "@/lib/api";
 import api from "@/lib/axios";
+import type { ApiResponseMeta } from "@/types/api";
 
 export interface InventoryReportItem {
     id?: number | string;
@@ -13,15 +14,7 @@ export interface InventoryReportItem {
 
 export interface InventoryReportListResponse {
     data: InventoryReportItem[];
-    meta?: {
-        pagination?: {
-            total: number;
-            count: number;
-            per_page: number;
-            current_page: number;
-            total_pages: number;
-        };
-    };
+    meta?: ApiResponseMeta;
 }
 
 export interface InventorySearchParams {
