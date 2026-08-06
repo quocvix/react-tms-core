@@ -438,6 +438,104 @@ const SidebarFlyout = ({ items, pathname, parentKey, activeSidebarId }: SidebarF
 //   4. Group item (expanded)  → icon + label + accordion
 // ---------------------------------------------------------------------------
 
+function SidebarNavGroupItem({
+    item,
+    collapsed,
+    active,
+    pathname,
+    activeSidebarId,
+}: {
+    item: SidebarRootGroupItem;
+    collapsed: boolean;
+    active: boolean;
+    pathname: string;
+    activeSidebarId: string | undefined;
+}) {
+    const [open, setOpen] = useState(active);
+
+    useEffect(() => {
+        if (active) setOpen(true);
+    }, [active]);
+
+    if (collapsed) {
+        return (
+            <SidebarMenuItem>
+                <HoverCard openDelay={60} closeDelay={120}>
+                    <HoverCardTrigger asChild>
+                        <div>
+                            <SidebarMenuButton
+                                isActive={active}
+                                className={cn(
+                                    "transition-all mt-1",
+                                    active && "font-medium",
+                                )}
+                            >
+                                <item.icon />
+                                <span>{item.title}</span>
+                            </SidebarMenuButton>
+                        </div>
+                    </HoverCardTrigger>
+
+                    <HoverCardContent
+                        side="right"
+                        align="start"
+                        sideOffset={10}
+                        className="w-auto border-0 bg-transparent p-0 shadow-none"
+                    >
+                        <SidebarFlyout
+                            items={item.children}
+                            pathname={pathname}
+                            parentKey={item.title}
+                            activeSidebarId={activeSidebarId}
+                        />
+                    </HoverCardContent>
+                </HoverCard>
+            </SidebarMenuItem>
+        );
+    }
+
+    return (
+        <SidebarMenuItem>
+            <SidebarMenuButton
+                isActive={active}
+                onClick={() => setOpen((value) => !value)}
+                aria-expanded={open}
+                className={cn("my-1 transition-all", active && "font-medium")}
+            >
+                <item.icon />
+                <span>{item.title}</span>
+                <ChevronRight
+                    className={cn(
+                        "ml-auto size-4 shrink-0 transition-transform duration-200",
+                        open && "rotate-90",
+                    )}
+                />
+            </SidebarMenuButton>
+
+            {open && (
+                <SidebarMenuSub className="mr-0 mt-1">
+                    {item.children.map((child, index) => {
+                        const childKey = getItemKey(
+                            child,
+                            `${item.title}-${index}-${child.title}`,
+                        );
+
+                        return (
+                            <SidebarTreeNode
+                                key={childKey}
+                                item={child}
+                                pathname={pathname}
+                                nodeKey={childKey}
+                                activeSidebarId={activeSidebarId}
+                            />
+                        );
+                    })}
+                </SidebarMenuSub>
+            )}
+        </SidebarMenuItem>
+    );
+}
+
 export function SidebarNavItem({ item }: SidebarNavItemProps) {
     const { pathname } = useLocation();
     const { isMobile, state } = useSidebar();
@@ -494,97 +592,13 @@ export function SidebarNavItem({ item }: SidebarNavItemProps) {
     }
 
     // --- GROUP ITEM ---
-    // useState/useEffect đặt SAU early return của link item là hợp lệ
-    // vì component luôn chạy đến đây nếu item là group (type đã được thu hẹp).
-    const [open, setOpen] = useState(active);
-
-    useEffect(() => {
-        // Tự động mở accordion khi navigate vào một child của group này
-        if (active) setOpen(true);
-    }, [active]);
-
-    // Collapsed group: chỉ hiện icon, hover để xem flyout
-    if (collapsed) {
-        return (
-            <SidebarMenuItem>
-                <HoverCard openDelay={60} closeDelay={120}>
-                    <HoverCardTrigger asChild>
-                        {/*
-                         * ⚠️ Bọc trong <div> thay vì truyền trực tiếp vào asChild
-                         * vì HoverCardTrigger cần một element DOM thực để gắn ref.
-                         * SidebarMenuButton không forward ref khi không có asChild.
-                         */}
-                        <div>
-                            <SidebarMenuButton
-                                isActive={active}
-                                className={cn(
-                                    "transition-all mt-1",
-                                    active && "font-medium",
-                                )}
-                            >
-                                <item.icon />
-                                <span>{item.title}</span>
-                            </SidebarMenuButton>
-                        </div>
-                    </HoverCardTrigger>
-
-                    <HoverCardContent
-                        side="right"
-                        align="start"
-                        sideOffset={10}
-                        className="w-auto border-0 bg-transparent p-0 shadow-none"
-                    >
-                        <SidebarFlyout
-                            items={item.children}
-                            pathname={pathname}
-                            parentKey={item.title}
-                            activeSidebarId={activeSidebarId}
-                        />
-                    </HoverCardContent>
-                </HoverCard>
-            </SidebarMenuItem>
-        );
-    }
-
-    // Expanded group: accordion với danh sách children
     return (
-        <SidebarMenuItem>
-            <SidebarMenuButton
-                isActive={active}
-                onClick={() => setOpen((value) => !value)}
-                aria-expanded={open}
-                className={cn("my-1 transition-all", active && "font-medium")}
-            >
-                <item.icon />
-                <span>{item.title}</span>
-                <ChevronRight
-                    className={cn(
-                        "ml-auto size-4 shrink-0 transition-transform duration-200",
-                        open && "rotate-90",
-                    )}
-                />
-            </SidebarMenuButton>
-
-            {open && (
-                <SidebarMenuSub className="mr-0 mt-1">
-                    {item.children.map((child, index) => {
-                        const childKey = getItemKey(
-                            child,
-                            `${item.title}-${index}-${child.title}`,
-                        );
-
-                        return (
-                            <SidebarTreeNode
-                                key={childKey}
-                                item={child}
-                                pathname={pathname}
-                                nodeKey={childKey}
-                                activeSidebarId={activeSidebarId}
-                            />
-                        );
-                    })}
-                </SidebarMenuSub>
-            )}
-        </SidebarMenuItem>
+        <SidebarNavGroupItem
+            item={item}
+            collapsed={collapsed}
+            active={active}
+            pathname={pathname}
+            activeSidebarId={activeSidebarId}
+        />
     );
 }

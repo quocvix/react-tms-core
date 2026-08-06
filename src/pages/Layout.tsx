@@ -6,11 +6,22 @@ import { useThemeStore } from "@/stores/useThemeStore";
 import { useEffect } from "react";
 import { AppBreadcrumb } from "@/components/header/AppBreadcrumb";
 
+import { useLanguageStore } from "@/stores/useLanguageStore";
+
 const Layout = () => {
-    const { isDark, setTheme } = useThemeStore();
+    const isDark = useThemeStore((s) => s.isDark);
+    const fetchLanguages = useLanguageStore((s) => s.fetchLanguages);
 
     useEffect(() => {
-        setTheme(isDark);
+        fetchLanguages();
+    }, [fetchLanguages]);
+
+    useEffect(() => {
+        if (isDark) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
     }, [isDark]);
 
     return (

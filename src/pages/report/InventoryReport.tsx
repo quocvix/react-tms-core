@@ -11,6 +11,7 @@ import { useDataTable } from "@/hooks/useDataTable";
 import inventoryReportService, {
     type InventorySearchParams,
     type InventoryReportItem,
+    type InventoryReportListResponse,
 } from "@/services/inventoryReport";
 
 const defaultSearchParams: InventorySearchParams = {
@@ -80,7 +81,7 @@ export default function InventoryReport() {
         setIsCollapseSearch,
         handleSearch,
         handleReset,
-    } = useDataTable<InventorySearchParams>({
+    } = useDataTable<InventorySearchParams, InventoryReportListResponse>({
         queryKey: "inventory-report",
         defaultParams: defaultSearchParams,
         fetcher: (params) => inventoryReportService.getList(params),

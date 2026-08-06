@@ -1,24 +1,25 @@
+import i18n from "@/lib/i18n";
 import { LoginForm } from "@/components/auth/login-form";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useThemeStore } from "@/stores/useThemeStore";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
 
 const LoginPage = () => {
     const { user } = useAuthStore();
     const token = localStorage.getItem("access-token");
-    const { isDark, setTheme } = useThemeStore();
-    const wasDarkRef = useRef(isDark);
 
     useEffect(() => {
-        wasDarkRef.current = isDark;
-        if (isDark) {
-            setTheme(false);
-        }
+        // Luôn sử dụng Tiếng Việt ở trang Login (dùng local i18n fallback, không gọi API languages/all-messages)
+        i18n.changeLanguage("vi");
+
+        // Không áp dụng theme dark ở trang Login (luôn hiển thị light theme)
+        document.documentElement.classList.remove("dark");
 
         return () => {
-            if (wasDarkRef.current) {
-                setTheme(true);
+            // Khi rời khỏi trang Login, khôi phục lại theme theo trạng thái trong store
+            if (useThemeStore.getState().isDark) {
+                document.documentElement.classList.add("dark");
             }
         };
     }, []);

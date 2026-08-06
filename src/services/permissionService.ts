@@ -26,7 +26,7 @@ const permissionService = {
         return res.data;
     },
 
-    givePermission: async (roleId: number, permissions: {}) => {
+    givePermission: async (roleId: number, permissions: Record<string, unknown>) => {
         const res = await api.put(
             API.URL_API_API_V1 + `/roles/${roleId}/give-permissions`,
             permissions,
@@ -34,12 +34,12 @@ const permissionService = {
         return res.data;
     },
 
-    createRole: async (data: any) => {
+    createRole: async (data: unknown) => {
         const res = await api.post(API.URL_API_API_V1 + `/roles`, data);
         return res.data;
     },
 
-    updateRole: async (idRole: number, data: any) => {
+    updateRole: async (idRole: number, data: unknown) => {
         const res = await api.put(
             API.URL_API_API_V1 + `/roles/${idRole}`,
             data,

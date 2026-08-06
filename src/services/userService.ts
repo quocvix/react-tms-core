@@ -70,7 +70,7 @@ const userService = {
     /**
      * Tạo người dùng mới
      */
-    createUser: async (payload: any) => {
+    createUser: async (payload: unknown) => {
         const res = await api.post("api/api/v1/users", payload);
         return res.data;
     },
@@ -86,7 +86,7 @@ const userService = {
     /**
      * Cập nhật thông tin người dùng
      */
-    updateUser: async (id: string, payload: any) => {
+    updateUser: async (id: string, payload: unknown) => {
         const res = await api.put(`api/api/v1/users/${id}`, payload);
         return res.data;
     },

@@ -114,7 +114,7 @@ const CreateUser = () => {
         },
     });
 
-    const onSubmit = (_data: FormValues) => {
+    const onSubmit = () => {
         setIsConfirmOpen(true);
     };
 
@@ -285,14 +285,14 @@ const CreateUser = () => {
                         <TabsList className="w-fit border bg-background p-1 gap-1 shadow-sm">
                             <TabsTrigger
                                 value="vai-tro"
-                                className="rounded-md px-4 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
+                                className="rounded-md px-4 transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                             >
                                 {t("Role", "Vai Trò")}
                             </TabsTrigger>
                             {addedRoles.length > 0 && (
                                 <TabsTrigger
                                     value="kho"
-                                    className="rounded-md px-4 transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md"
+                                    className="rounded-md px-4 transition-all data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md"
                                 >
                                     {t("Hub", "Kho")}
                                 </TabsTrigger>
@@ -342,7 +342,7 @@ const CreateUser = () => {
                                             "/administration/user-management/list",
                                         )
                                     }
-                                    className="bg-blue-600 hover:bg-blue-700"
+                                    className="bg-primary hover:bg-primary/90"
                                 >
                                     {t("Confirm", "Đồng ý")}
                                 </AlertDialogAction>
@@ -369,7 +369,7 @@ const CreateUser = () => {
                         <AlertDialogCancel>{t("Cancel", "Huỷ")}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleConfirmSave}
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="bg-primary hover:bg-primary/90"
                         >
                             {t("Confirm", "Đồng ý")}
                         </AlertDialogAction>

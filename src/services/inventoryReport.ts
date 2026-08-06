@@ -9,7 +9,7 @@ export interface InventoryReportItem {
     item_name?: string;
     avail_qty?: number | string;
     uom?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface InventoryReportListResponse {
@@ -21,49 +21,48 @@ export interface InventorySearchParams {
     hub_id: string;
     item_code: string;
     item_name: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 const inventoryReportService = {
-    getList: async (params?: Record<string, any> | string) => {
-        let queryString = "";
+    getList: async (params?: Record<string, unknown> | string) => {
         if (typeof params === "string") {
-            queryString = params;
-        } else if (params) {
-            const searchParams = new URLSearchParams();
-            Object.entries(params).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    searchParams.append(key, String(value));
-                }
-            });
-            const str = searchParams.toString();
-            if (str) queryString = `?${str}`;
+            const res = await api.get<InventoryReportListResponse>(
+                `${API.URL_INTERGRATION_V1}/inbound/inventory${params.startsWith("?") ? params : `?${params}`}`,
+            );
+            return res.data;
         }
         const res = await api.get<InventoryReportListResponse>(
-            API.URL_INTERGRATION_V1 + `/inbound/inventory${queryString}`,
+            `${API.URL_INTERGRATION_V1}/inbound/inventory`,
+            { params },
         );
         return res.data;
     },
 
     getHubs: async (params: string = "") => {
         const res = await api.get(
-            API.URL_MASTER_DATA_V1 + `/gonsa/infos/hubs` + params,
+            `${API.URL_MASTER_DATA_V1}/gonsa/infos/hubs${params}`,
         );
         return res.data;
     },
 
-    postSyncNow: async (data?: any) => {
+    postSyncNow: async (data?: unknown) => {
         const res = await api.post(
-            API.URL_INTERGRATION_V1 + `/inbound/sync`,
+            `${API.URL_INTERGRATION_V1}/inbound/sync`,
             data,
         );
         return res.data;
     },
 
     getItemNameAutocomplete: async (query: string = "") => {
-        const params = `?litmit=20&item_name=${encodeURIComponent(query)}`;
         const res = await api.get(
-            API.URL_MASTER_DATA_V1 + `/gonsa/items/auto-complete/item-name${params}`,
+            `${API.URL_MASTER_DATA_V1}/gonsa/items/auto-complete/item-name`,
+            {
+                params: {
+                    limit: 20,
+                    item_name: query,
+                },
+            },
         );
         return res.data;
     },

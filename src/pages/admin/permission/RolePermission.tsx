@@ -376,7 +376,7 @@ const RoleDialog = memo(
             try {
                 await onSave(name);
                 onOpenChange(false);
-            } catch (error) {
+            } catch {
                 // Lỗi đã được xử lý (toast) ở parent, chỉ cần dừng loading
             } finally {
                 setIsSaving(false);

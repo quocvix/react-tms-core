@@ -27,8 +27,8 @@ export const useAuthStore = create<AuthState>()(
                         hasCheckedToken: false,
                         permission: { data: [] },
                     });
-                    localStorage.clear();
-                    sessionStorage.clear();
+                    localStorage.removeItem("access-token");
+                    sessionStorage.removeItem("access-token");
                 },
 
                 signIn: async (email, password, platform, device_id) => {
@@ -51,10 +51,11 @@ export const useAuthStore = create<AuthState>()(
                         await get().fetchMe();
 
                         toast.success("Đăng nhập thành công!");
-                    } catch (error: any) {
+                    } catch (error: unknown) {
+                        const errObj = error as { response?: { data?: { message?: string; error?: { message?: string } } } };
                         const errorMessage =
-                            error.response?.data?.message ||
-                            error.response?.data?.error?.message ||
+                            errObj.response?.data?.message ||
+                            errObj.response?.data?.error?.message ||
                             "Đăng nhập không thành công";
                         toast.error(errorMessage);
                     } finally {

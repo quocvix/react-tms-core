@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
-export interface UseDataTableOptions<TParams extends Record<string, any>, TData = any> {
+export interface UseDataTableOptions<TParams extends Record<string, unknown>, TData = unknown> {
     queryKey: string | readonly unknown[];
     defaultParams: TParams;
     fetcher: (params: TParams & { page?: number; limit?: number }) => Promise<TData>;
@@ -9,10 +9,10 @@ export interface UseDataTableOptions<TParams extends Record<string, any>, TData 
     initialLimit?: number;
     enablePage?: boolean;
     enableLimit?: boolean;
-    queryOptions?: Omit<UseQueryOptions<TData, Error, TData, any>, "queryKey" | "queryFn">;
+    queryOptions?: Omit<UseQueryOptions<TData, Error, TData, readonly unknown[]>, "queryKey" | "queryFn">;
 }
 
-export function useDataTable<TParams extends Record<string, any>, TData = any>({
+export function useDataTable<TParams extends Record<string, unknown>, TData = unknown>({
     queryKey,
     defaultParams,
     fetcher,
@@ -36,12 +36,12 @@ export function useDataTable<TParams extends Record<string, any>, TData = any>({
     }, [enablePage, enableLimit, page, limit]);
 
     const fullQueryKey = useMemo(() => {
-        const keyArr = Array.isArray(queryKey)
+        const keyArr: unknown[] = Array.isArray(queryKey)
             ? [...queryKey, submittedParams]
             : [queryKey, submittedParams];
         if (enablePage) keyArr.push(page);
         if (enableLimit) keyArr.push(limit);
-        return keyArr;
+        return keyArr as readonly unknown[];
     }, [queryKey, submittedParams, enablePage, enableLimit, page, limit]);
 
     const query = useQuery<TData, Error>({
@@ -52,8 +52,6 @@ export function useDataTable<TParams extends Record<string, any>, TData = any>({
                 ...submittedParams,
                 ...paginationParams,
             }),
-        staleTime: 0,
-        gcTime: 0,
         ...queryOptions,
     });
 
@@ -62,17 +60,15 @@ export function useDataTable<TParams extends Record<string, any>, TData = any>({
             setSubmittedParams(params);
             setPage(initialPage);
             setSelectedRowKeys([]);
-            query.refetch();
         },
-        [initialPage, query],
+        [initialPage],
     );
 
     const handleReset = useCallback(() => {
         setSubmittedParams(defaultParams);
         setPage(initialPage);
         setSelectedRowKeys([]);
-        query.refetch();
-    }, [defaultParams, initialPage, query]);
+    }, [defaultParams, initialPage]);
 
     const rowSelection = useMemo(
         () => ({

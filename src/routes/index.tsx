@@ -31,18 +31,14 @@ const LanguageManagement = lazy(() => import("@/pages/admin/translation/Translat
 const NotFoundPage = lazy(() => import("@/pages/NotFoundPage"));
 
 /** Wrap a lazy component in Suspense with a loading spinner */
-const S = ({ children }: { children: React.ReactNode }) => (
+const withSuspense = (children: React.ReactNode) => (
     <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
 );
 
 export const router = createBrowserRouter([
     {
         path: "/login",
-        element: (
-            <S>
-                <LoginPage />
-            </S>
-        ),
+        element: withSuspense(<LoginPage />),
     },
     {
         element: <ProtectedRoute />,
@@ -53,11 +49,7 @@ export const router = createBrowserRouter([
                 children: [
                     {
                         index: true,
-                        element: (
-                            <S>
-                                <DashboardPage />
-                            </S>
-                        ),
+                        element: withSuspense(<DashboardPage />),
                     },
                     {
                         path: "projects",
@@ -65,11 +57,7 @@ export const router = createBrowserRouter([
                         children: [
                             {
                                 index: true,
-                                element: (
-                                    <S>
-                                        <ProjectsPage />
-                                    </S>
-                                ),
+                                element: withSuspense(<ProjectsPage />),
                             },
                             {
                                 path: "frontend",
@@ -78,20 +66,12 @@ export const router = createBrowserRouter([
                                     {
                                         path: "web-app",
                                         handle: { breadcrumb: "Web App" },
-                                        element: (
-                                            <S>
-                                                <WebAppPage />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<WebAppPage />),
                                     },
                                     {
                                         path: "landing-page",
                                         handle: { breadcrumb: "Landing Page" },
-                                        element: (
-                                            <S>
-                                                <LandingPage />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<LandingPage />),
                                     },
                                 ],
                             },
@@ -102,20 +82,12 @@ export const router = createBrowserRouter([
                                     {
                                         path: "api",
                                         handle: { breadcrumb: "API" },
-                                        element: (
-                                            <S>
-                                                <ApiPage />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<ApiPage />),
                                     },
                                     {
                                         path: "workers",
                                         handle: { breadcrumb: "Workers" },
-                                        element: (
-                                            <S>
-                                                <WorkersPage />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<WorkersPage />),
                                     },
                                 ],
                             },
@@ -132,11 +104,7 @@ export const router = createBrowserRouter([
                             {
                                 path: "inventory",
                                 handle: { breadcrumb: "Inventory" },
-                                element: (
-                                    <S>
-                                        <InventoryReport />
-                                    </S>
-                                ),
+                                element: withSuspense(<InventoryReport />),
                             },
                         ],
                     },
@@ -151,20 +119,12 @@ export const router = createBrowserRouter([
                             {
                                 path: "permission",
                                 handle: { breadcrumb: "Role & Permission" },
-                                element: (
-                                    <S>
-                                        <PermissionPage />
-                                    </S>
-                                ),
+                                element: withSuspense(<PermissionPage />),
                             },
                             {
                                 path: "translation",
                                 handle: { breadcrumb: "Translation" },
-                                element: (
-                                    <S>
-                                        <LanguageManagement />
-                                    </S>
-                                ),
+                                element: withSuspense(<LanguageManagement />),
                             },
                             {
                                 path: "user-management",
@@ -176,38 +136,22 @@ export const router = createBrowserRouter([
                                     },
                                     {
                                         path: "list",
-                                        element: (
-                                            <S>
-                                                <UserList />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<UserList />),
                                     },
                                     {
                                         path: "create",
                                         handle: { breadcrumb: "Create" },
-                                        element: (
-                                            <S>
-                                                <CreateUser />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<CreateUser />),
                                     },
                                     {
                                         path: "update/:id",
                                         handle: { breadcrumb: "Update" },
-                                        element: (
-                                            <S>
-                                                <UpdateUser mode="edit" />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<UpdateUser mode="edit" />),
                                     },
                                     {
                                         path: "view/:id",
                                         handle: { breadcrumb: "View" },
-                                        element: (
-                                            <S>
-                                                <UpdateUser mode="view" />
-                                            </S>
-                                        ),
+                                        element: withSuspense(<UpdateUser mode="view" />),
                                     },
                                 ],
                             },
@@ -216,28 +160,16 @@ export const router = createBrowserRouter([
                     {
                         path: "settings",
                         handle: { breadcrumb: "Settings" },
-                        element: (
-                            <S>
-                                <SettingsPage />
-                            </S>
-                        ),
+                        element: withSuspense(<SettingsPage />),
                     },
                     {
                         path: "user",
                         handle: { breadcrumb: "Profile" },
-                        element: (
-                            <S>
-                                <UserPage />
-                            </S>
-                        ),
+                        element: withSuspense(<UserPage />),
                     },
                     {
                         path: "*",
-                        element: (
-                            <S>
-                                <NotFoundPage />
-                            </S>
-                        ),
+                        element: withSuspense(<NotFoundPage />),
                     },
                 ],
             },

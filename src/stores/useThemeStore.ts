@@ -18,6 +18,14 @@ export const useThemeStore = create<ThemeState>()(
                 }
             },
             setTheme: (dark: boolean) => {
+                if (get().isDark === dark) {
+                    if (dark) {
+                        document.documentElement.classList.add("dark");
+                    } else {
+                        document.documentElement.classList.remove("dark");
+                    }
+                    return;
+                }
                 set({ isDark: dark });
                 
                 if (dark) {
@@ -29,6 +37,13 @@ export const useThemeStore = create<ThemeState>()(
         }),
         {
             name: "theme-storage",
+            onRehydrateStorage: () => (state) => {
+                if (state?.isDark) {
+                    document.documentElement.classList.add("dark");
+                } else {
+                    document.documentElement.classList.remove("dark");
+                }
+            },
         },
     ),
 );

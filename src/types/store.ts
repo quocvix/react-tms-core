@@ -5,7 +5,7 @@ export interface AuthState {
     accessToken: string | null;
     loading: boolean;
     hasCheckedToken: boolean;
-    permission: { data: {}[] } | null;
+    permission: { data: Record<string, unknown>[] } | null;
 
     setAccessToken: (accessToken: string) => void;
 

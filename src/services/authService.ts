@@ -42,8 +42,8 @@ const authService = {
         return res.data.data;
     },
 
-    fetchPermission: async (): Promise<{ data: {}[] }> => {
-        const res = await api.get("api/api/v1/users/permissions");
+    fetchPermission: async (): Promise<{ data: Record<string, unknown>[] }> => {
+        const res = await api.get<{ data: Record<string, unknown>[] }>("api/api/v1/users/permissions");
         return res.data;
     },
 
