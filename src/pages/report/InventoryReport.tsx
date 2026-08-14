@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
 import { AntdTable, TableSlot } from "@/components/table/antd-table";
+import { TableColumnSettings } from "@/components/table/table-column-settings";
 import { Button } from "@/components/ui/button";
 import { DynamicSearchBox, type SearchFieldConfig } from "@/components/search-box/dynamic-search-box";
 import { useTableColumns } from "@/hooks/useTableColumns";
@@ -138,7 +139,7 @@ export default function InventoryReport() {
         [t],
     );
 
-    const columns = useTableColumns("inventory_report", baseColumns);
+    const { columns, userSettings, updateConfig, resetConfig, isUpdating } = useTableColumns<InventoryReportItem>("inventory_report", baseColumns);
 
     return (
         <div className="space-y-4">
@@ -168,6 +169,16 @@ export default function InventoryReport() {
                 showSearchToggle={true}
                 isSearchCollapsed={isCollapseSearch}
                 onSearchCollapseChange={setIsCollapseSearch}
+                columnSettings={
+                    <TableColumnSettings
+                        tableId="inventory_report"
+                        baseColumns={baseColumns}
+                        userSettings={userSettings}
+                        onSave={updateConfig}
+                        onReset={resetConfig}
+                        isUpdating={isUpdating}
+                    />
+                }
             >
                 <TableSlot name="rightAction">
                     <Button onClick={() => syncMutation.mutate()} disabled={syncMutation.isPending}>

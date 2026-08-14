@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { AntdTable, TableSlot } from "@/components/table/antd-table";
+import { TableColumnSettings } from "@/components/table/table-column-settings";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -235,7 +236,8 @@ export default function UserListPage() {
             })),
         [baseColumns, columnRenderers],
     );
-    const columns = useTableColumns("user_management", columnsWithRender);
+
+    const { columns, userSettings, updateConfig, resetConfig, isUpdating } = useTableColumns("user_management", columnsWithRender);
 
     return (
         <div className="space-y-4">
@@ -266,6 +268,16 @@ export default function UserListPage() {
                 showSearchToggle={true}
                 isSearchCollapsed={isCollapseSearch}
                 onSearchCollapseChange={setIsCollapseSearch}
+                columnSettings={
+                    <TableColumnSettings
+                        tableId="user_management"
+                        baseColumns={columnsWithRender}
+                        userSettings={userSettings}
+                        onSave={updateConfig}
+                        onReset={resetConfig}
+                        isUpdating={isUpdating}
+                    />
+                }
             >
                 <TableSlot name="rightAction">
                     <Button

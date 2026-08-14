@@ -30,6 +30,7 @@ interface AntdTableProps<T> extends TableProps<T> {
     onSearchCollapseChange?: (collapsed: boolean) => void;
     borderless?: boolean;
     skeletonRowsCount?: number;
+    columnSettings?: ReactNode;
 }
 
 export function AntdTable<T extends object>({
@@ -51,6 +52,7 @@ export function AntdTable<T extends object>({
     onSearchCollapseChange,
     borderless,
     skeletonRowsCount,
+    columnSettings,
     ...props
 }: AntdTableProps<T>) {
     const { isDark } = useThemeStore();
@@ -203,6 +205,7 @@ export function AntdTable<T extends object>({
                                         {isSearchCollapsed ? t("Show Search Engines") : t("Hide Search Engines")}
                                     </Button>
                                 )}
+                                {columnSettings}
                                 {slots.leftAction}
                             </div>
                         ) : (
